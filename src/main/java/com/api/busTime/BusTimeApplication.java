@@ -1,4 +1,4 @@
-package eduardo.BusTime;
+package com.api.busTime;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

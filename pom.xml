@@ -8,10 +8,10 @@
 		<version>2.6.7</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>eduardo</groupId>
-	<artifactId>BusTime</artifactId>
+	<groupId>com.api</groupId>
+	<artifactId>busTime</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>BusTime</name>
+	<name>busTime</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
 		<java.version>11</java.version>
