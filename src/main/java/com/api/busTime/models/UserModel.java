@@ -7,27 +7,28 @@ import javax.persistence.*;
 import java.util.Date;
 import java.util.UUID;
 
-@Entity
 @Data
-@Table(name = "USERS")
+@Entity
+@Table(name = "users")
 public class UserModel {
 
-    private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     @Column(nullable = false)
     private String name;
     @Column(nullable = false)
     private String email;
     @Column(nullable = false)
-    private Date birth_date;
+    private Date birthDate;
     @Column(nullable = false)
     private String cpf;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @Column(nullable = false)
     private Boolean isAdmin;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @Column(nullable = false)
     private String password;
 }
