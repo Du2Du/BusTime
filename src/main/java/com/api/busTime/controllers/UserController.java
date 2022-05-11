@@ -1,6 +1,7 @@
 package com.api.busTime.controllers;
 
 import com.api.busTime.dtos.CreateUserDTO;
+import com.api.busTime.dtos.UpdateUserDTO;
 import com.api.busTime.models.UserModel;
 import com.api.busTime.services.UserService;
 import org.springframework.validation.annotation.Validated;
@@ -17,9 +18,23 @@ public class UserController {
         this.userService = userService;
     }
 
+    @GetMapping("/{id}")
+    public UserModel findById(@PathVariable Long id){
+        return this.userService.findById(id);
+    }
+
     @PostMapping
     public UserModel create(@RequestBody @Validated CreateUserDTO createUserDTO){
-        System.out.println("sexo");
         return this.userService.create(createUserDTO);
+    }
+
+    @PutMapping("/{id}")
+    public UserModel update(@PathVariable Long id, @RequestBody @Validated UpdateUserDTO updateUserDTO){
+        return this.userService.update(id, updateUserDTO);
+    }
+
+    @DeleteMapping("/{id}")
+    public String delete(@PathVariable Long id){
+        return this.userService.delete(id);
     }
 }

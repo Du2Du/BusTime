@@ -17,14 +17,22 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Professor, sendo bem sincero eu não sei oque essa class faz por completo, mas ela serviu para mostrar o erro pro usuário em uma requisição
+ */
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @ControllerAdvice
-//Professor, sendo bem sincero eu não sei oque essa class faz por completo, mas ela serviu para mostrar o erro pro usuário em uma requisição
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(EntityExistsException.class)
     public ResponseEntity<Object> handleEntityExistsException(EntityExistsException exception) {
         return buildResponseEntity(HttpStatus.CONFLICT, exception.getMessage(),
+                Collections.singletonList(exception.getMessage()));
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Object> handleEntityNotFoundException(ResourceNotFoundException exception) {
+        return buildResponseEntity(HttpStatus.NOT_FOUND, exception.getMessage(),
                 Collections.singletonList(exception.getMessage()));
     }
 

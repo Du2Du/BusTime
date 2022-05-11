@@ -1,7 +1,9 @@
 package com.api.busTime.services;
 
 import com.api.busTime.dtos.CreateUserDTO;
+import com.api.busTime.dtos.UpdateUserDTO;
 import com.api.busTime.exceptions.EntityExistsException;
+import com.api.busTime.exceptions.ResourceNotFoundException;
 import com.api.busTime.models.UserModel;
 import com.api.busTime.repositories.UserRepository;
 import org.springframework.beans.BeanUtils;
@@ -20,7 +22,7 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    //Função que irá criar o usuário
+    //Método que irá criar o usuário
     public UserModel create(CreateUserDTO userDTO) {
         //Verificação se existe algum usuário com o email cadastrado
         Optional<UserModel> userOptional = this.userRepository.findUserByEmail(userDTO.getEmail());
@@ -43,5 +45,32 @@ public class UserService {
 
         //Criando usuário
         return this.userRepository.save(user);
+    }
+
+    //Método que irá pegar os dados de um usuário pelo id
+    public UserModel findById(Long userId){
+        //Realiza uma busca do usuário com o id recebido
+        return this.userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+    }
+
+    //Método que irá fazer o update do usuário
+    public UserModel update(Long userId, UpdateUserDTO updateUserDTO){
+        //Verificando se existe algum usuário com esse id
+       UserModel user = this.userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+
+        //Colocando os valores de updateUserDTO em user
+        BeanUtils.copyProperties(updateUserDTO, user);
+
+        return this.userRepository.save(user);
+    }
+
+    //Método que irá deletar o usuário
+    public String delete(Long userId){
+        //Procurando o usuário pelo id
+        UserModel user = this.userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+
+        this.userRepository.delete(user);
+
+        return "Usuário Deletado com sucesso";
     }
 }
