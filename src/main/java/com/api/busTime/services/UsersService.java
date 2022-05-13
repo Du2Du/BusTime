@@ -3,6 +3,7 @@ package com.api.busTime.services;
 import com.api.busTime.dtos.CreateUserDTO;
 import com.api.busTime.dtos.LoginRequest;
 import com.api.busTime.dtos.LoginResponse;
+import com.api.busTime.dtos.UpdateUserDTO;
 import com.api.busTime.models.UserModel;
 import org.springframework.http.ResponseEntity;
 
@@ -12,6 +13,10 @@ public interface UsersService {
     UserModel findById(Long userId);
 
     UserModel me();
+
+    String delete(Long id);
+
+    UserModel update( Long id, UpdateUserDTO updateUserDTO);
 
     ResponseEntity<LoginResponse> login(LoginRequest loginRequest, String accessToken, String refreshToken);
 

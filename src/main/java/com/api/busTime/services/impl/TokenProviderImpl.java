@@ -11,6 +11,10 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 
+/**
+ * @Author: TCMALTUNKAN - MEHMET ANIL ALTUNKAN
+ * @Date: 30.12.2019:09:40, Pzt
+ **/
 @Service
 public class TokenProviderImpl implements TokenProvider {
 

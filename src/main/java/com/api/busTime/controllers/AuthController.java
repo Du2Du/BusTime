@@ -2,9 +2,10 @@ package com.api.busTime.controllers;
 
 import com.api.busTime.dtos.LoginRequest;
 import com.api.busTime.dtos.LoginResponse;
-import com.api.busTime.services.impl.UserServiceImpl;
+import com.api.busTime.services.UsersService;
 import com.api.busTime.utils.SecurityCipher;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,17 +15,17 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@CrossOrigin(origins = "*", maxAge = 3600)
 @RequestMapping("/api/auth")
 public class AuthController {
 
     @Autowired
-    private AuthenticationManager authenticationManager;
+    private UsersService userService;
 
     @Autowired
-    private UserServiceImpl userService;
+    private AuthenticationManager authenticationManager;
 
-    @PostMapping("/login")
+    @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<LoginResponse> login(
             @CookieValue(name = "accessToken", required = false) String accessToken,
             @CookieValue(name = "refreshToken", required = false) String refreshToken,
@@ -37,5 +38,14 @@ public class AuthController {
         String decryptedAccessToken = SecurityCipher.decrypt(accessToken);
         String decryptedRefreshToken = SecurityCipher.decrypt(refreshToken);
         return userService.login(loginRequest, decryptedAccessToken, decryptedRefreshToken);
+    }
+
+    @PostMapping(value = "/refresh", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<LoginResponse> refreshToken(
+            @CookieValue(name = "accessToken", required = false) String accessToken,
+            @CookieValue(name = "refreshToken", required = false) String refreshToken) {
+        String decryptedAccessToken = SecurityCipher.decrypt(accessToken);
+        String decryptedRefreshToken = SecurityCipher.decrypt(refreshToken);
+        return userService.refresh(decryptedAccessToken, decryptedRefreshToken);
     }
 }

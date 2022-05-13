@@ -3,7 +3,7 @@ package com.api.busTime.controllers;
 import com.api.busTime.dtos.CreateUserDTO;
 import com.api.busTime.dtos.UpdateUserDTO;
 import com.api.busTime.models.UserModel;
-import com.api.busTime.services.impl.UserServiceImpl;
+import com.api.busTime.services.UsersService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,15 +12,20 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/users")
 public class UserController {
 
-    private final UserServiceImpl userService;
+    private final UsersService userService;
 
-    public UserController(UserServiceImpl userService) {
+    public UserController(UsersService userService) {
         this.userService = userService;
     }
 
     @GetMapping("/{id}")
     public UserModel findById(@PathVariable Long id){
         return this.userService.findById(id);
+    }
+
+    @GetMapping("/me")
+    public UserModel me() {
+        return this.userService.me();
     }
 
     @PostMapping

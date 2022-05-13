@@ -123,7 +123,6 @@ public class UserServiceImpl implements UsersService {
     public UserModel me() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
-
         return this.findByEmail(customUserDetails.getUsername());
     }
 
@@ -161,6 +160,11 @@ public class UserServiceImpl implements UsersService {
 
         //Colocando os valores de updateUserDTO em user
         BeanUtils.copyProperties(updateUserDTO, user);
+
+        //Encriptografando senha
+        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(10, new SecureRandom());
+        String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
+        user.setPassword(encodedPassword);
 
         return this.userRepository.save(user);
     }
