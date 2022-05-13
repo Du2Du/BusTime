@@ -19,7 +19,7 @@ public class CreateUserDTO {
     @NotBlank
     private String name;
     @NotBlank
-    @Size(min = 6, message = "a senha deve ter mais de 6 caracteres.")
+    @Size(min = 6, message = "A senha deve ter mais de 6 caracteres.")
     private String password;
     @NotBlank
     @CPF
