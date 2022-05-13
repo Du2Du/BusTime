@@ -3,7 +3,7 @@ package com.api.busTime.controllers;
 import com.api.busTime.dtos.CreateUserDTO;
 import com.api.busTime.dtos.UpdateUserDTO;
 import com.api.busTime.models.UserModel;
-import com.api.busTime.services.impl.UserService;
+import com.api.busTime.services.impl.UserServiceImpl;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/users")
 public class UserController {
 
-    private final UserService userService;
+    private final UserServiceImpl userService;
 
-    public UserController(UserService userService) {
+    public UserController(UserServiceImpl userService) {
         this.userService = userService;
     }
 

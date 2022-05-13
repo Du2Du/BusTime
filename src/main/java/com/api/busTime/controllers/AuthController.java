@@ -2,7 +2,7 @@ package com.api.busTime.controllers;
 
 import com.api.busTime.dtos.LoginRequest;
 import com.api.busTime.dtos.LoginResponse;
-import com.api.busTime.services.impl.UserService;
+import com.api.busTime.services.impl.UserServiceImpl;
 import com.api.busTime.utils.SecurityCipher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +22,7 @@ public class AuthController {
     private AuthenticationManager authenticationManager;
 
     @Autowired
-    private UserService userService;
+    private UserServiceImpl userService;
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(

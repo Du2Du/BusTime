@@ -21,7 +21,7 @@ import java.security.SecureRandom;
 import java.util.Optional;
 
 @Service
-public class UserService implements UsersService {
+public class UserServiceImpl implements UsersService {
 
     @Autowired
     private UserRepository userRepository;
@@ -32,7 +32,7 @@ public class UserService implements UsersService {
     @Autowired
     private CookieUtil cookieUtil;
 
-    public UserService(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
