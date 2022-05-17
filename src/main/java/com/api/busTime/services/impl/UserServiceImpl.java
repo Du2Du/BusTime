@@ -134,7 +134,6 @@ public class UserServiceImpl implements UsersService {
         }
 
         String currentUserEmail = tokenProvider.getUsernameFromToken(refreshToken);
-        System.out.println(currentUserEmail);
 
         Token newAccessToken = tokenProvider.generateAccessToken(currentUserEmail);
         HttpHeaders responseHeaders = new HttpHeaders();

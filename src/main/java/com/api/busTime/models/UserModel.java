@@ -24,7 +24,6 @@ public class UserModel {
     @Column(nullable = false)
     private String cpf;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(nullable = false)
     private Boolean isAdmin;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
