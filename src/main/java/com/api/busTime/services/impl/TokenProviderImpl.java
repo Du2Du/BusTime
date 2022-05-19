@@ -55,16 +55,19 @@ public class TokenProviderImpl implements TokenProvider {
         return new Token(Token.TokenType.REFRESH, token, duration, LocalDateTime.ofInstant(expiryDate.toInstant(), ZoneId.systemDefault()));
     }
 
+    @Override
     public String getUsernameFromToken(String token) {
         Claims claims = Jwts.parser().setSigningKey(tokenSecret).parseClaimsJws(token).getBody();
         return claims.getSubject();
     }
 
+    @Override
     public LocalDateTime getExpiryDateFromToken(String token) {
         Claims claims = Jwts.parser().setSigningKey(tokenSecret).parseClaimsJws(token).getBody();
         return LocalDateTime.ofInstant(claims.getExpiration().toInstant(), ZoneId.systemDefault());
     }
 
+    @Override
     public boolean validateToken(String token) {
         try {
             Jwts.parser().setSigningKey(tokenSecret).parse(token);

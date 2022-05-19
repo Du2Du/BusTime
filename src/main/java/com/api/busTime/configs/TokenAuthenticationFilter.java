@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
     @Value("${authentication.auth.accessTokenCookieName}")
     private String accessTokenCookieName;
@@ -83,4 +84,3 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         return getJwtFromRequest(request);
     }
 }
-
