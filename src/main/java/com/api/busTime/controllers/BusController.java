@@ -25,20 +25,21 @@ public class BusController {
 
 
     @PostMapping
-    public BusModel create(@RequestBody @Validated CreateBusDTO createBusDTO, @CookieValue(name = "accessToken", required = true) String accessToken) {
+    public BusModel create(@RequestBody @Validated CreateBusDTO createBusDTO) {
         Long userId = this.usersService.me().getId();
-        return this.busService.create(createBusDTO, userId, accessToken);
+        return this.busService.create(createBusDTO, userId);
     } 
     
     @PutMapping("/{id}")
-    public BusModel update(@PathVariable Long id, @RequestBody @Validated UpdateBusDTO updateBusDTO, @CookieValue(name = "accessToken", required = true) String accessToken) {
+    public BusModel update(@PathVariable Long id, @RequestBody @Validated UpdateBusDTO updateBusDTO) {
         Long userId = this.usersService.me().getId();
-        return this.busService.update(id, updateBusDTO, userId, accessToken);
+        return this.busService.update(id, updateBusDTO, userId);
     }
     
     @DeleteMapping("/{id}")
-    public String delete(@PathVariable Long id, @CookieValue(name = "accessToken", required = true) String accessToken){
+    public String delete(@PathVariable Long id){
         Long userId = this.usersService.me().getId();
-        return this.busService.delete(id, userId, accessToken);
+        return this.busService.delete(id, userId);
     }
+    
 }

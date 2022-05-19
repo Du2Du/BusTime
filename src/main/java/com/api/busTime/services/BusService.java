@@ -6,12 +6,12 @@ import com.api.busTime.models.BusModel;
 
 public interface BusService {
     
-    BusModel create(CreateBusDTO createBusDTO, Long userId, String accessToken);
+    BusModel create(CreateBusDTO createBusDTO, Long userId);
 
     //BusModel findBus(CreateBusDTO createBusDTO, String accessToken,);
     
-    BusModel update(Long busId,UpdateBusDTO updateBusDTO, Long userId, String accessToken);
+    BusModel update(Long busId,UpdateBusDTO updateBusDTO, Long userId);
     
-    String delete(Long busId, Long userId, String accessToken);
+    String delete(Long busId, Long userId);
 
 }

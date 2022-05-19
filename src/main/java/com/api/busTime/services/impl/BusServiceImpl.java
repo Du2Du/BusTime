@@ -19,9 +19,7 @@ public class BusServiceImpl implements BusService {
 
     //Método que cria o onibus
     @Override
-    public BusModel create(CreateBusDTO createBusDTO, Long userId, String accessToken) {
-        //Validação se o usuário está autenticado
-        if (accessToken == null) throw new ResourceNotFoundException("Você precisa estar autenticado para prosseguir!");
+    public BusModel create(CreateBusDTO createBusDTO, Long userId) {
 
         //Verificando se o id do usuárioAdmin é o mesmo do usuário logado
         if (createBusDTO.getIdUserAdmin().equals(userId))
@@ -37,9 +35,7 @@ public class BusServiceImpl implements BusService {
 
     //Método que atualiza as informações do onibus
     @Override
-    public BusModel update(Long busId, UpdateBusDTO updateBusDTO, Long userId, String accessToken) {
-        //Validação se o usuário está autenticado
-        if (accessToken == null) throw new ResourceNotFoundException("Você precisa estar autenticado para prosseguir!");
+    public BusModel update(Long busId, UpdateBusDTO updateBusDTO, Long userId) {
 
         //Verificando se o id do usuárioAdmin é o mesmo do usuário logado
         if (updateBusDTO.getIdUserAdmin().equals(userId))
@@ -56,9 +52,7 @@ public class BusServiceImpl implements BusService {
 
     //Método que irá deletar o onibus
     @Override
-    public String delete(Long busId, Long userId, String accessToken){
-        //Validação se o usuário está autenticado
-        if (accessToken == null) throw new ResourceNotFoundException("Você precisa estar autenticado para prosseguir!");
+    public String delete(Long busId, Long userId){
 
         //Verificando se existe algum onibus com esse id
         BusModel bus = this.busRepository.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
