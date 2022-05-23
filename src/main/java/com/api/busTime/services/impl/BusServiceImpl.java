@@ -4,12 +4,13 @@ import com.api.busTime.dtos.CreateBusDTO;
 import com.api.busTime.dtos.UpdateBusDTO;
 import com.api.busTime.exceptions.ResourceNotFoundException;
 import com.api.busTime.models.BusModel;
-import com.api.busTime.models.UserModel;
 import com.api.busTime.repositories.BusRepository;
 import com.api.busTime.services.BusService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class BusServiceImpl implements BusService {
@@ -59,5 +60,10 @@ public class BusServiceImpl implements BusService {
          this.busRepository.delete(bus);
 
         return "Ônibus deletado com sucesso";
+    }
+    
+    @Override
+    public List<BusModel> listAll(){
+        return this.busRepository.findAll();
     }
 }

@@ -10,6 +10,8 @@ import com.api.busTime.services.UsersService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RequestMapping("/v1/bus")
@@ -40,6 +42,11 @@ public class BusController {
     public String delete(@PathVariable Long id){
         Long userId = this.usersService.me().getId();
         return this.busService.delete(id, userId);
+    }
+    
+    @GetMapping
+    public List<BusModel> listAll(){
+        return this.busService.listAll();
     }
     
 }
