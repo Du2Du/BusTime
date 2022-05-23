@@ -20,11 +20,7 @@ public class BusServiceImpl implements BusService {
     //Método que cria o onibus
     @Override
     public BusModel create(CreateBusDTO createBusDTO, Long userId) {
-
-        //Verificando se o id do usuárioAdmin é o mesmo do usuário logado
-        if (createBusDTO.getIdUserAdmin().equals(userId))
-            throw new ResourceNotFoundException("O id do usuário não bate com o logado!");
-
+    
         BusModel bus = new BusModel();
 
         //Colocando os valores de userDTO em user
@@ -36,9 +32,8 @@ public class BusServiceImpl implements BusService {
     //Método que atualiza as informações do onibus
     @Override
     public BusModel update(Long busId, UpdateBusDTO updateBusDTO, Long userId) {
-
         //Verificando se o id do usuárioAdmin é o mesmo do usuário logado
-        if (updateBusDTO.getIdUserAdmin().equals(userId))
+        if (!updateBusDTO.getIdUserAdmin().equals(userId))
             throw new ResourceNotFoundException("O id do usuário não bate com o logado!");
 
         //Verificando se existe algum onibus com esse id
@@ -58,7 +53,7 @@ public class BusServiceImpl implements BusService {
         BusModel bus = this.busRepository.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
 
         //Verificando se o id do usuárioAdmin é o mesmo do usuário logado
-        if (bus.getIdUserAdmin().equals(userId))
+        if (!bus.getIdUserAdmin().equals(userId))
             throw new ResourceNotFoundException("Você não pode deletar esse ônibus");
         
          this.busRepository.delete(bus);

@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter
@@ -15,14 +16,14 @@ public class CreateBusDTO {
     @NotBlank
     @JsonFormat(pattern = "HH:mm")
     private String hour;
-    @NotBlank
+    @NotNull
     private Float ticketPrice;
     @NotBlank
     private String inicialRoute;
     @NotBlank
     private String finalRoute;
-    @NotBlank
+    @NotNull
     private Integer busNumber;
-    @NotBlank
+    @NotNull
     private Long idUserAdmin;
 }
