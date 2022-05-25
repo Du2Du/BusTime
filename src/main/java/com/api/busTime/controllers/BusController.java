@@ -1,9 +1,7 @@
 package com.api.busTime.controllers;
 
 import com.api.busTime.dtos.CreateBusDTO;
-import com.api.busTime.dtos.CreateUserDTO;
 import com.api.busTime.dtos.UpdateBusDTO;
-import com.api.busTime.dtos.UpdateUserDTO;
 import com.api.busTime.models.BusModel;
 import com.api.busTime.services.BusService;
 import com.api.busTime.services.UsersService;
