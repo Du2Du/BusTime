@@ -22,12 +22,12 @@ import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UsersService {
+    
+    @Autowired
+    private TokenProvider tokenProvider;
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private TokenProvider tokenProvider;
 
     @Autowired
     private CookieUtil cookieUtil;
