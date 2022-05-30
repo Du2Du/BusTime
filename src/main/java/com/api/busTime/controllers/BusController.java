@@ -5,6 +5,8 @@ import com.api.busTime.dtos.UpdateBusDTO;
 import com.api.busTime.models.BusModel;
 import com.api.busTime.services.BusService;
 import com.api.busTime.services.UsersService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,8 +45,8 @@ public class BusController {
     }
     
     @GetMapping
-    public List<BusModel> listAll(){
-        return this.busService.listAll();
+    public Page<BusModel> listAll( Pageable pageable){
+        return this.busService.listAll(pageable);
     }
     
 }
