@@ -5,6 +5,8 @@ import com.api.busTime.dtos.UpdateBusDTO;
 import com.api.busTime.models.BusModel;
 import com.api.busTime.services.BusService;
 import com.api.busTime.services.UsersService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +25,10 @@ public class BusController {
         this.busService = busService; this.usersService = usersService;
     }
 
+    @GetMapping("/{id}")
+    public BusModel getById(@PathVariable Long id){
+        return this.busService.getById(id);
+    }
 
     @PostMapping
     public BusModel create(@RequestBody @Validated CreateBusDTO createBusDTO) {
@@ -43,8 +49,8 @@ public class BusController {
     }
     
     @GetMapping
-    public List<BusModel> listAll(){
-        return this.busService.listAll();
+    public Page<BusModel> listAll( Pageable pageable){
+        return this.busService.listAll(pageable);
     }
     
 }

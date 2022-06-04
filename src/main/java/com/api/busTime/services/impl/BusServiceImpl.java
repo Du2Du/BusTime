@@ -8,6 +8,8 @@ import com.api.busTime.repositories.BusRepository;
 import com.api.busTime.services.BusService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -62,8 +64,15 @@ public class BusServiceImpl implements BusService {
         return "Ônibus deletado com sucesso";
     }
     
-    @Override
-    public List<BusModel> listAll(){
-        return this.busRepository.findAll();
+    //Método que lista o onibus por id
+    public BusModel getById(Long busId){
+        BusModel bus = this.busRepository.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
+        
+        return bus;
+    }
+    
+    //Método que lista os onibus paginado
+    public Page<BusModel> listAll(Pageable pageable){
+        return this.busRepository.findAll(pageable);
     }
 }
