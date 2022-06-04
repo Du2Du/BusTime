@@ -64,6 +64,13 @@ public class BusServiceImpl implements BusService {
         return "Ônibus deletado com sucesso";
     }
     
+    //Método que lista o onibus por id
+    public BusModel getById(Long busId){
+        BusModel bus = this.busRepository.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
+        
+        return bus;
+    }
+    
     //Método que lista os onibus paginado
     public Page<BusModel> listAll(Pageable pageable){
         return this.busRepository.findAll(pageable);

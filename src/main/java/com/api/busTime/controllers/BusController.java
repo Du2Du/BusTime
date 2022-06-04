@@ -25,6 +25,10 @@ public class BusController {
         this.busService = busService; this.usersService = usersService;
     }
 
+    @GetMapping("/{id}")
+    public BusModel getById(@PathVariable Long id){
+        return this.busService.getById(id);
+    }
 
     @PostMapping
     public BusModel create(@RequestBody @Validated CreateBusDTO createBusDTO) {

@@ -10,6 +10,8 @@ import java.util.List;
 
 public interface BusService {
     
+    BusModel getById(Long busId);
+    
     BusModel create(CreateBusDTO createBusDTO, Long userId);
 
     BusModel update(Long busId,UpdateBusDTO updateBusDTO, Long userId);
