@@ -7,10 +7,13 @@ import com.api.busTime.services.BusService;
 import com.api.busTime.services.UsersService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.util.Streamable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -29,27 +32,29 @@ public class BusController {
     public BusModel getById(@PathVariable Long id){
         return this.busService.getById(id);
     }
+    
+    @GetMapping("/user/{id}")
+    public Stream<BusModel> findBusForUser(Pageable pageable, @PathVariable Long id){
+        return this.busService.findBusForUser(pageable, id);
+    }
 
     @PostMapping
     public BusModel create(@RequestBody @Validated CreateBusDTO createBusDTO) {
-        Long userId = this.usersService.me().getId();
-        return this.busService.create(createBusDTO, userId);
+        return this.busService.create(createBusDTO);
     } 
     
     @PutMapping("/{id}")
     public BusModel update(@PathVariable Long id, @RequestBody @Validated UpdateBusDTO updateBusDTO) {
-        Long userId = this.usersService.me().getId();
-        return this.busService.update(id, updateBusDTO, userId);
+        return this.busService.update(id, updateBusDTO);
     }
     
     @DeleteMapping("/{id}")
     public String delete(@PathVariable Long id){
-        Long userId = this.usersService.me().getId();
-        return this.busService.delete(id, userId);
+        return this.busService.delete(id);
     }
     
     @GetMapping
-    public Page<BusModel> listAll( Pageable pageable){
+    public Page<BusModel> listAll(Pageable pageable){
         return this.busService.listAll(pageable);
     }
     

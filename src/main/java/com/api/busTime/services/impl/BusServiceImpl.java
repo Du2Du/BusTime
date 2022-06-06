@@ -1,6 +1,7 @@
 package com.api.busTime.services.impl;
 
 import com.api.busTime.dtos.CreateBusDTO;
+import com.api.busTime.dtos.CustomUserDetails;
 import com.api.busTime.dtos.UpdateBusDTO;
 import com.api.busTime.exceptions.ResourceNotFoundException;
 import com.api.busTime.models.BusModel;
@@ -10,9 +11,14 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.util.Streamable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 public class BusServiceImpl implements BusService {
@@ -22,8 +28,8 @@ public class BusServiceImpl implements BusService {
 
     //Método que cria o onibus
     @Override
-    public BusModel create(CreateBusDTO createBusDTO, Long userId) {
-    
+    public BusModel create(CreateBusDTO createBusDTO) {
+
         BusModel bus = new BusModel();
 
         //Colocando os valores de userDTO em user
@@ -34,9 +40,12 @@ public class BusServiceImpl implements BusService {
 
     //Método que atualiza as informações do onibus
     @Override
-    public BusModel update(Long busId, UpdateBusDTO updateBusDTO, Long userId) {
+    public BusModel update(Long busId, UpdateBusDTO updateBusDTO) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+
         //Verificando se o id do usuárioAdmin é o mesmo do usuário logado
-        if (!updateBusDTO.getIdUserAdmin().equals(userId))
+        if (!updateBusDTO.getIdUserAdmin().equals(customUserDetails.getUser().getId()))
             throw new ResourceNotFoundException("O id do usuário não bate com o logado!");
 
         //Verificando se existe algum onibus com esse id
@@ -50,29 +59,46 @@ public class BusServiceImpl implements BusService {
 
     //Método que irá deletar o onibus
     @Override
-    public String delete(Long busId, Long userId){
+    public String delete(Long busId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
 
         //Verificando se existe algum onibus com esse id
         BusModel bus = this.busRepository.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
 
         //Verificando se o id do usuárioAdmin é o mesmo do usuário logado
-        if (!bus.getIdUserAdmin().equals(userId))
+        if (!bus.getIdUserAdmin().equals(customUserDetails.getUser().getId()))
             throw new ResourceNotFoundException("Você não pode deletar esse ônibus");
-        
-         this.busRepository.delete(bus);
+
+        this.busRepository.delete(bus);
 
         return "Ônibus deletado com sucesso";
     }
-    
+
     //Método que lista o onibus por id
-    public BusModel getById(Long busId){
+    @Override
+    public BusModel getById(Long busId) {
         BusModel bus = this.busRepository.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
-        
+
         return bus;
     }
-    
+
+    //Método que retorna os onibus criados pelo usuario
+    @Override
+    public Stream<BusModel> findBusForUser(Pageable pageable, Long userId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        if (!userId.equals(customUserDetails.getUser().getId()))
+            throw new ResourceNotFoundException("O id do usuário não bate com o logado!");
+
+        Page<BusModel> bus = this.busRepository.findAll(pageable);
+
+        return bus.stream().filter(busModel -> Objects.equals(busModel.getIdUserAdmin(), userId));
+    }
+
     //Método que lista os onibus paginado
-    public Page<BusModel> listAll(Pageable pageable){
+    public Page<BusModel> listAll(Pageable pageable) {
         return this.busRepository.findAll(pageable);
     }
 }
