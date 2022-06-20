@@ -37,6 +37,10 @@ public class BusController {
     public Stream<BusModel> findBusForUser(Pageable pageable, @PathVariable Long id){
         return this.busService.findBusForUser(pageable, id);
     }
+    @GetMapping("/line")
+    public List<BusModel> listForLine(@RequestParam(name = "line") String line){
+        return this.busService.listForLine(line);
+    }
 
     @PostMapping
     public BusModel create(@RequestBody @Validated CreateBusDTO createBusDTO) {

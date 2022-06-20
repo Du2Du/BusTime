@@ -16,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -95,6 +96,13 @@ public class BusServiceImpl implements BusService {
         Page<BusModel> bus = this.busRepository.findAll(pageable);
 
         return bus.stream().filter(busModel -> Objects.equals(busModel.getIdUserAdmin(), userId));
+    }
+    
+    //Método que lista os onibus pela linha
+    @Override
+    public List<BusModel> listForLine (String line){
+        List<BusModel> bus = this.busRepository.listBusForLine(line);
+        return bus;
     }
 
     //Método que lista os onibus paginado

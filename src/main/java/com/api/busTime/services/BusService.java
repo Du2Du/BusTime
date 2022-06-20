@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.util.Streamable;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 public interface BusService {
@@ -20,6 +21,8 @@ public interface BusService {
     Stream<BusModel> findBusForUser(Pageable pageable, Long userId);
             
     Page<BusModel> listAll(Pageable pageable);
+
+    List<BusModel> listForLine(String line);
     
     String delete(Long busId);
 
