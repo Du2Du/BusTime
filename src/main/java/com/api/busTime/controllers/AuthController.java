@@ -14,6 +14,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 @RestController
 @RequestMapping("/v1/auth")
 public class AuthController {
@@ -36,6 +39,12 @@ public class AuthController {
         String decryptedAccessToken = SecurityCipher.decrypt(accessToken);
         String decryptedRefreshToken = SecurityCipher.decrypt(refreshToken);
         return userService.login(loginRequest, decryptedAccessToken, decryptedRefreshToken);
+    }
+
+    @GetMapping("/logout")
+    public ResponseEntity<LoginResponse> logout(@CookieValue(name = "accessToken", required = false) String accessToken,
+                                                @CookieValue(name = "refreshToken", required = false) String refreshToken, HttpServletRequest req, HttpServletResponse resp) {
+        return userService.logout(accessToken, refreshToken, req, resp);
     }
 
     @PostMapping(value = "/refresh", produces = MediaType.APPLICATION_JSON_VALUE)
