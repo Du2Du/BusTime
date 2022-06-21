@@ -17,9 +17,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.security.SecureRandom;
 import java.util.Optional;
 
@@ -63,9 +60,11 @@ public class UserServiceImpl implements UsersService {
     public UserModel create(CreateUserDTO userDTO) {
         //Verificação se existe algum usuário com o email cadastrado
         Optional<UserModel> userOptional = this.userRepository.findUserByEmail(userDTO.getEmail());
+        Optional<UserModel> userOptionalCpf = this.userRepository.findUserByCpf(userDTO.getCpf());
 
         //Retornando erro caso exista um usuário com o email cadastrado
         if (userOptional.isPresent()) throw new EntityExistsException("Usuário com email ja cadsatrado");
+        if (userOptionalCpf.isPresent()) throw new EntityExistsException("Usuário com cpf ja cadsatrado");
 
         UserModel user = new UserModel();
 
@@ -174,23 +173,5 @@ public class UserServiceImpl implements UsersService {
         this.userRepository.delete(user);
 
         return "Usuário Deletado com sucesso";
-    }
-    
-    //Método para fazer o logout do usuário
-    public ResponseEntity<LoginResponse> logout(String accessToken, String refreshToken, HttpServletRequest req, HttpServletResponse resp){
-
-        Cookie[] cookies = req.getCookies();
-        if (cookies != null)
-            for (Cookie cookie : cookies) {
-                cookie.setValue("");
-                cookie.setPath("/");
-                cookie.setMaxAge(0);
-                resp.addCookie(cookie);
-            }
-
-        LoginResponse loginResponse = new LoginResponse(LoginResponse.SuccessFailure.SUCCESS,
-                "Logout concluido. Os Tokens foram deletados do cookie.");
-
-        return ResponseEntity.ok().body(loginResponse);
     }
 }
