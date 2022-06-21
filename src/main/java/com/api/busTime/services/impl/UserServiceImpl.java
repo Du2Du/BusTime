@@ -169,6 +169,7 @@ public class UserServiceImpl implements UsersService {
     }
 
     //Método para fazer o logout do usuário
+    //Atualmente esse método funciona apenas na base de teste, ainda estou tentando entender de porque na produção não estar funcionando
     public ResponseEntity<LoginResponse> logout(String accessToken, String refreshToken, HttpServletRequest req, HttpServletResponse resp){
 
         Cookie[] cookies = req.getCookies();
