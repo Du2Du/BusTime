@@ -86,23 +86,20 @@ public class BusServiceImpl implements BusService {
 
     //Método que retorna os onibus criados pelo usuario
     @Override
-    public Stream<BusModel> findBusForUser(Pageable pageable, Long userId) {
+    public List<BusModel> findBusForUser(Long userId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
 
         if (!userId.equals(customUserDetails.getUser().getId()))
             throw new ResourceNotFoundException("O id do usuário não bate com o logado!");
-
-        Page<BusModel> bus = this.busRepository.findAll(pageable);
-
-        return bus.stream().filter(busModel -> Objects.equals(busModel.getIdUserAdmin(), userId));
+        
+        return this.busRepository.listBusForUserId(userId);
     }
     
     //Método que lista os onibus pela linha
     @Override
-    public List<BusModel> listForLine (String line){
-        List<BusModel> bus = this.busRepository.listBusForLine(line);
-        return bus;
+    public Page<BusModel> listForLine (String line, Pageable pageable){
+        return  this.busRepository.listBusForLine(line, pageable);
     }
 
     //Método que lista os onibus paginado
