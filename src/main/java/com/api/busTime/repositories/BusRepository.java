@@ -10,5 +10,8 @@ import java.util.List;
 
 public interface BusRepository extends PagingAndSortingRepository<BusModel, Long> {
     @Query("SELECT b FROM BusModel b WHERE b.line = ?1")
-    List<BusModel> listBusForLine(String line);
+    Page<BusModel> listBusForLine(String line, Pageable pageable);
+
+    @Query("SELECT b FROM BusModel b WHERE b.idUserAdmin = ?1")
+    List<BusModel> listBusForUserId(Long userId);
 }

@@ -18,11 +18,11 @@ public interface BusService {
 
     BusModel update(Long busId,UpdateBusDTO updateBusDTO);
 
-    Stream<BusModel> findBusForUser(Pageable pageable, Long userId);
+    List<BusModel> findBusForUser(Long userId);
             
     Page<BusModel> listAll(Pageable pageable);
 
-    List<BusModel> listForLine(String line);
+    Page<BusModel> listForLine(String line, Pageable pageable);
     
     String delete(Long busId);
 

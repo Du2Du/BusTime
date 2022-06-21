@@ -34,12 +34,12 @@ public class BusController {
     }
     
     @GetMapping("/user/{id}")
-    public Stream<BusModel> findBusForUser(Pageable pageable, @PathVariable Long id){
-        return this.busService.findBusForUser(pageable, id);
+    public List<BusModel> findBusForUser(@PathVariable Long id){
+        return this.busService.findBusForUser(id);
     }
     @GetMapping("/line")
-    public List<BusModel> listForLine(@RequestParam(name = "line") String line){
-        return this.busService.listForLine(line);
+    public Page<BusModel> listForLine(@RequestParam(name = "line") String line, Pageable pageable){
+        return this.busService.listForLine(line, pageable);
     }
 
     @PostMapping
