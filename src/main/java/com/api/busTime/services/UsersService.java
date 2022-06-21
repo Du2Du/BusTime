@@ -7,6 +7,9 @@ import com.api.busTime.dtos.UpdateUserDTO;
 import com.api.busTime.models.UserModel;
 import org.springframework.http.ResponseEntity;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 public interface UsersService {
     UserModel create(CreateUserDTO userDTO);
 
@@ -21,4 +24,6 @@ public interface UsersService {
     ResponseEntity<LoginResponse> login(LoginRequest loginRequest, String accessToken, String refreshToken);
 
     ResponseEntity<LoginResponse> refresh(String accessToken, String refreshToken);
+
+    ResponseEntity<LoginResponse>  logout(String accessToken, String refreshToken, HttpServletRequest req, HttpServletResponse resp);
 }
