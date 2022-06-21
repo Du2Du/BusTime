@@ -177,6 +177,7 @@ public class UserServiceImpl implements UsersService {
                 cookie.setValue("");
                 cookie.setPath("/");
                 cookie.setMaxAge(0);
+                cookie.setHttpOnly(true);
                 resp.addCookie(cookie);
             }
 
