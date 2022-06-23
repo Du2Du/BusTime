@@ -11,15 +11,11 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.util.Streamable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 @Service
 public class BusServiceImpl implements BusService {
@@ -44,13 +40,13 @@ public class BusServiceImpl implements BusService {
     public BusModel update(Long busId, UpdateBusDTO updateBusDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
-
-        //Verificando se o id do usuárioAdmin é o mesmo do usuário logado
-        if (!updateBusDTO.getIdUserAdmin().equals(customUserDetails.getUser().getId()))
-            throw new ResourceNotFoundException("O id do usuário não bate com o logado!");
-
+        
         //Verificando se existe algum onibus com esse id
         BusModel bus = this.busRepository.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
+        
+        //Verificando se o id do usuárioAdmin é o mesmo do usuário logado
+        if (!bus.getIdUserAdmin().equals(customUserDetails.getUser().getId()))
+            throw new ResourceNotFoundException("Você não pode alterar esse ônibus");
 
         //Colocando os valores de userDTO em user
         BeanUtils.copyProperties(updateBusDTO, bus);
