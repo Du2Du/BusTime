@@ -1,21 +1,17 @@
 package com.api.busTime.services.impl;
 
 import com.api.busTime.dtos.CreateBusDTO;
-import com.api.busTime.dtos.CustomUserDetails;
 import com.api.busTime.dtos.EmailTaskDefinition;
 import com.api.busTime.dtos.UpdateBusDTO;
 import com.api.busTime.exceptions.ResourceNotFoundException;
 import com.api.busTime.models.BusModel;
 import com.api.busTime.models.UserModel;
 import com.api.busTime.repositories.BusRepository;
-import com.api.busTime.repositories.UserRepository;
 import com.api.busTime.services.BusService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -46,7 +42,7 @@ public class BusServiceImpl implements BusService {
         //Colocando os valores de userDTO em user
         BeanUtils.copyProperties(createBusDTO, bus);
         
-        taskDefinitionBean.setTaskDefinition();
+//        taskDefinitionBean.setTaskDefinition();
 
         return this.busRepository.save(bus);
     }
@@ -54,11 +50,10 @@ public class BusServiceImpl implements BusService {
     //Método que atualiza as informações do onibus
     @Override
     public BusModel update(Long busId, UpdateBusDTO updateBusDTO) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        UserModel customUserDetails = userService.me();
 
         //Verificando se o id do usuárioAdmin é o mesmo do usuário logado
-        if (!updateBusDTO.getIdUserAdmin().equals(customUserDetails.getUser().getId()))
+        if (!updateBusDTO.getIdUserAdmin().equals(customUserDetails.getId()))
             throw new ResourceNotFoundException("O id do usuário não bate com o logado!");
 
         //Verificando se existe algum onibus com esse id
@@ -73,14 +68,13 @@ public class BusServiceImpl implements BusService {
     //Método que irá deletar o onibus
     @Override
     public String delete(Long busId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        UserModel customUserDetails = userService.me();
 
         //Verificando se existe algum onibus com esse id
         BusModel bus = this.busRepository.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
 
         //Verificando se o id do usuárioAdmin é o mesmo do usuário logado
-        if (!bus.getIdUserAdmin().equals(customUserDetails.getUser().getId()))
+        if (!bus.getIdUserAdmin().equals(customUserDetails.getId()))
             throw new ResourceNotFoundException("Você não pode deletar esse ônibus");
 
         this.busRepository.delete(bus);
