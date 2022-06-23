@@ -2,39 +2,51 @@ package com.api.busTime.services.impl;
 
 import com.api.busTime.dtos.CreateBusDTO;
 import com.api.busTime.dtos.CustomUserDetails;
+import com.api.busTime.dtos.EmailTaskDefinition;
 import com.api.busTime.dtos.UpdateBusDTO;
 import com.api.busTime.exceptions.ResourceNotFoundException;
 import com.api.busTime.models.BusModel;
+import com.api.busTime.models.UserModel;
 import com.api.busTime.repositories.BusRepository;
+import com.api.busTime.repositories.UserRepository;
 import com.api.busTime.services.BusService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.util.Streamable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 @Service
 public class BusServiceImpl implements BusService {
 
     @Autowired
     private BusRepository busRepository;
+    
+    @Autowired
+    private UserServiceImpl userService;
+    
+    @Autowired
+    private TaskDefinitionBeanImpl taskDefinitionBean;
+    
+    @Autowired
+    private TaskSchedulingServiceImpl taskSchedulingService;
 
     //Método que cria o onibus
     @Override
     public BusModel create(CreateBusDTO createBusDTO) {
-
+        UserModel customUserDetails = userService.me();
+        EmailTaskDefinition emailTaskDefinition = EmailTaskDefinition.builder().emailTo(customUserDetails.getEmail()).emailFrom("busTimeEquip@gmail.com").build();
+        
         BusModel bus = new BusModel();
 
         //Colocando os valores de userDTO em user
         BeanUtils.copyProperties(createBusDTO, bus);
+        
+        taskDefinitionBean.setTaskDefinition();
 
         return this.busRepository.save(bus);
     }
@@ -87,10 +99,9 @@ public class BusServiceImpl implements BusService {
     //Método que retorna os onibus criados pelo usuario
     @Override
     public List<BusModel> findBusForUser(Long userId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+        UserModel customUserDetails = userService.me();
 
-        if (!userId.equals(customUserDetails.getUser().getId()))
+        if (!userId.equals(customUserDetails.getId()))
             throw new ResourceNotFoundException("O id do usuário não bate com o logado!");
         
         return this.busRepository.listBusForUserId(userId);
