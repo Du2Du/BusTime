@@ -3,6 +3,7 @@ package com.api.busTime.services.impl;
 import com.api.busTime.dtos.CreateBusDTO;
 import com.api.busTime.dtos.CustomUserDetails;
 import com.api.busTime.dtos.UpdateBusDTO;
+import com.api.busTime.exceptions.Forbbiden;
 import com.api.busTime.exceptions.ResourceNotFoundException;
 import com.api.busTime.models.BusModel;
 import com.api.busTime.repositories.BusRepository;
@@ -65,7 +66,7 @@ public class BusServiceImpl implements BusService {
 
         //Verificando se o id do usuárioAdmin é o mesmo do usuário logado
         if (!bus.getIdUserAdmin().equals(customUserDetails.getUser().getId()))
-            throw new ResourceNotFoundException("Você não pode deletar esse ônibus");
+            throw new Forbbiden("Você não pode deletar esse ônibus");
 
         this.busRepository.delete(bus);
 
@@ -87,7 +88,7 @@ public class BusServiceImpl implements BusService {
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
 
         if (!userId.equals(customUserDetails.getUser().getId()))
-            throw new ResourceNotFoundException("O id do usuário não bate com o logado!");
+            throw new Forbbiden("O id do usuário não bate com o logado!");
         
         return this.busRepository.listBusForUserId(userId);
     }

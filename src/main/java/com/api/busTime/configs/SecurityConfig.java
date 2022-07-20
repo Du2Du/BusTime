@@ -87,8 +87,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "/**/*.html",
                         "/**/*.css",
                         "/**/*.js").permitAll()
-                .antMatchers("/v1/auth/**").permitAll().antMatchers(HttpMethod.POST, "/v1/users").permitAll()
-                .anyRequest().authenticated().and();
+                .antMatchers("/api/v1/auth/**").permitAll().antMatchers(HttpMethod.POST, "/api/v1/users").permitAll().antMatchers("/**/*").permitAll()
+                .anyRequest().authenticated()  .and()
+                .logout().logoutUrl("/logout").logoutSuccessUrl("/login").deleteCookies("refreshToken").deleteCookies("accessToken").invalidateHttpSession(true)
+                .and();
 
         http.addFilterBefore(tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
