@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
-@RequestMapping("/v1/bus")
+@RequestMapping("/api/v1/bus")
 public class BusController {
 
     private final BusService busService;

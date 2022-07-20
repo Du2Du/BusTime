@@ -25,5 +25,5 @@ public interface UsersService {
 
     ResponseEntity<LoginResponse> refresh(String accessToken, String refreshToken);
 
-    ResponseEntity<LoginResponse>  logout(String accessToken, String refreshToken, HttpServletRequest req, HttpServletResponse resp);
+    void  logout();
 }

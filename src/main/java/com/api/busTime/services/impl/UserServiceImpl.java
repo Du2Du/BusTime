@@ -168,24 +168,10 @@ public class UserServiceImpl implements UsersService {
         return this.userRepository.save(user);
     }
 
-    //Método para fazer o logout do usuário
-    //Atualmente esse método funciona apenas na base de teste, ainda estou tentando entender de porque na produção não estar funcionando
-    public ResponseEntity<LoginResponse> logout(String accessToken, String refreshToken, HttpServletRequest req, HttpServletResponse resp){
-
-        Cookie[] cookies = req.getCookies();
-        if (cookies != null)
-            for (Cookie cookie : cookies) {
-                cookie.setValue("");
-                cookie.setPath("/");
-                cookie.setMaxAge(0);
-                cookie.setHttpOnly(true);
-                resp.addCookie(cookie);
-            }
-
-        LoginResponse loginResponse = new LoginResponse(LoginResponse.SuccessFailure.SUCCESS,
-                "Logout concluido. Os Tokens foram deletados do cookie.");
-
-        return ResponseEntity.ok().body(loginResponse);
+    //Deixei esse método inutil pq teria q arrumar o front de novo, arrumar os arquivos no backend de novo, então por enquanto continua aq. Aonde realmente faz o logout é no 
+    //SecurityConfig
+    public void logout(){
+    return;
     }
 
     //Método que irá deletar o usuário
