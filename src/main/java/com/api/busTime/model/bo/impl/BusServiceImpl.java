@@ -1,13 +1,13 @@
-package com.api.busTime.services.impl;
+package com.api.busTime.model.bo.impl;
 
-import com.api.busTime.dtos.CreateBusDTO;
-import com.api.busTime.dtos.CustomUserDetails;
-import com.api.busTime.dtos.UpdateBusDTO;
+import com.api.busTime.model.dtos.CreateBusDTO;
+import com.api.busTime.model.dtos.CustomUserDetails;
+import com.api.busTime.model.dtos.UpdateBusDTO;
 import com.api.busTime.exceptions.Forbbiden;
 import com.api.busTime.exceptions.ResourceNotFoundException;
-import com.api.busTime.models.BusModel;
-import com.api.busTime.repositories.BusRepository;
-import com.api.busTime.services.BusService;
+import com.api.busTime.model.entities.BusModel;
+import com.api.busTime.model.dao.BusRepository;
+import com.api.busTime.model.bo.BusService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;

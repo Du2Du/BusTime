@@ -1,8 +1,8 @@
 package com.api.busTime.controllers;
 
-import com.api.busTime.dtos.LoginRequest;
-import com.api.busTime.dtos.LoginResponse;
-import com.api.busTime.services.UsersService;
+import com.api.busTime.model.dtos.LoginRequest;
+import com.api.busTime.model.dtos.LoginResponse;
+import com.api.busTime.model.bo.UsersService;
 import com.api.busTime.utils.SecurityCipher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -13,9 +13,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/api/v1/auth")

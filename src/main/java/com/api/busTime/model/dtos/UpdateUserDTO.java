@@ -1,4 +1,4 @@
-package com.api.busTime.dtos;
+package com.api.busTime.model.dtos;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
@@ -9,18 +9,15 @@ import org.springframework.format.annotation.DateTimeFormat;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.util.Date;
 
 @Getter
 @Setter
-public class CreateUserDTO {
-
+public class UpdateUserDTO {
     @NotBlank
     private String name;
+    private Boolean isAdmin;
     @NotBlank
-    @Size(min = 6, message = "A senha deve ter mais de 6 caracteres.")
-    private String password;
     @NotBlank
     @CPF
     private String cpf;
@@ -31,5 +28,6 @@ public class CreateUserDTO {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @JsonFormat(pattern = "dd/MM/yyyy")
     private Date birthDate;
-
+    @NotNull
+    private Long id;
 }

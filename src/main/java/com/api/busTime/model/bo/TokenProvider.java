@@ -1,6 +1,6 @@
-package com.api.busTime.services;
+package com.api.busTime.model.bo;
 
-import com.api.busTime.dtos.Token;
+import com.api.busTime.model.dtos.Token;
 
 import java.time.LocalDateTime;
 

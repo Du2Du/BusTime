@@ -1,14 +1,11 @@
-package com.api.busTime.services;
+package com.api.busTime.model.bo;
 
-import com.api.busTime.dtos.CreateUserDTO;
-import com.api.busTime.dtos.LoginRequest;
-import com.api.busTime.dtos.LoginResponse;
-import com.api.busTime.dtos.UpdateUserDTO;
-import com.api.busTime.models.UserModel;
+import com.api.busTime.model.dtos.CreateUserDTO;
+import com.api.busTime.model.dtos.LoginRequest;
+import com.api.busTime.model.dtos.LoginResponse;
+import com.api.busTime.model.dtos.UpdateUserDTO;
+import com.api.busTime.model.entities.UserModel;
 import org.springframework.http.ResponseEntity;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 public interface UsersService {
     UserModel create(CreateUserDTO userDTO);

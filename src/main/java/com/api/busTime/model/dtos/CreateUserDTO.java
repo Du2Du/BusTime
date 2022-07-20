@@ -1,4 +1,4 @@
-package com.api.busTime.dtos;
+package com.api.busTime.model.dtos;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
@@ -14,11 +14,13 @@ import java.util.Date;
 
 @Getter
 @Setter
-public class UpdateUserDTO {
+public class CreateUserDTO {
+
     @NotBlank
     private String name;
-    private Boolean isAdmin;
     @NotBlank
+    @Size(min = 6, message = "A senha deve ter mais de 6 caracteres.")
+    private String password;
     @NotBlank
     @CPF
     private String cpf;
@@ -29,6 +31,5 @@ public class UpdateUserDTO {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @JsonFormat(pattern = "dd/MM/yyyy")
     private Date birthDate;
-    @NotNull
-    private Long id;
+
 }

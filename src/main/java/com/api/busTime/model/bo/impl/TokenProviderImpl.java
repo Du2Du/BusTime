@@ -1,7 +1,7 @@
-package com.api.busTime.services.impl;
+package com.api.busTime.model.bo.impl;
 
-import com.api.busTime.dtos.Token;
-import com.api.busTime.services.TokenProvider;
+import com.api.busTime.model.dtos.Token;
+import com.api.busTime.model.bo.TokenProvider;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 import io.jsonwebtoken.*;

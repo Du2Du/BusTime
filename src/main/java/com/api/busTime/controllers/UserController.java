@@ -1,9 +1,9 @@
 package com.api.busTime.controllers;
 
-import com.api.busTime.dtos.CreateUserDTO;
-import com.api.busTime.dtos.UpdateUserDTO;
-import com.api.busTime.models.UserModel;
-import com.api.busTime.services.UsersService;
+import com.api.busTime.model.dtos.CreateUserDTO;
+import com.api.busTime.model.dtos.UpdateUserDTO;
+import com.api.busTime.model.entities.UserModel;
+import com.api.busTime.model.bo.UsersService;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 

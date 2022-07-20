@@ -1,4 +1,4 @@
-package com.api.busTime.dtos;
+package com.api.busTime.model.dtos;
 
 import lombok.Getter;
 import lombok.Setter;

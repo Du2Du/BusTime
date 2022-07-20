@@ -1,9 +1,9 @@
-package com.api.busTime.services.impl;
+package com.api.busTime.model.bo.impl;
 
-import com.api.busTime.dtos.CustomUserDetails;
+import com.api.busTime.model.dtos.CustomUserDetails;
 import com.api.busTime.exceptions.ResourceNotFoundException;
-import com.api.busTime.models.UserModel;
-import com.api.busTime.repositories.UserRepository;
+import com.api.busTime.model.entities.UserModel;
+import com.api.busTime.model.dao.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

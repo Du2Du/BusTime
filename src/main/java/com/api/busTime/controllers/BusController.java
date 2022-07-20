@@ -1,19 +1,16 @@
 package com.api.busTime.controllers;
 
-import com.api.busTime.dtos.CreateBusDTO;
-import com.api.busTime.dtos.UpdateBusDTO;
-import com.api.busTime.models.BusModel;
-import com.api.busTime.services.BusService;
-import com.api.busTime.services.UsersService;
+import com.api.busTime.model.dtos.CreateBusDTO;
+import com.api.busTime.model.dtos.UpdateBusDTO;
+import com.api.busTime.model.entities.BusModel;
+import com.api.busTime.model.bo.BusService;
+import com.api.busTime.model.bo.UsersService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.util.Streamable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)

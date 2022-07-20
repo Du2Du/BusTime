@@ -1,12 +1,12 @@
-package com.api.busTime.services.impl;
+package com.api.busTime.model.bo.impl;
 
-import com.api.busTime.dtos.*;
+import com.api.busTime.model.dtos.*;
 import com.api.busTime.exceptions.EntityExistsException;
 import com.api.busTime.exceptions.ResourceNotFoundException;
-import com.api.busTime.models.UserModel;
-import com.api.busTime.repositories.UserRepository;
-import com.api.busTime.services.TokenProvider;
-import com.api.busTime.services.UsersService;
+import com.api.busTime.model.entities.UserModel;
+import com.api.busTime.model.dao.UserRepository;
+import com.api.busTime.model.bo.TokenProvider;
+import com.api.busTime.model.bo.UsersService;
 import com.api.busTime.utils.CookieUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +17,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.security.SecureRandom;
 import java.util.Optional;
 

@@ -1,7 +1,7 @@
-package com.api.busTime.dtos;
+package com.api.busTime.model.dtos;
 
-import com.api.busTime.models.UserModel;
-import com.api.busTime.models.UserRoles;
+import com.api.busTime.model.entities.UserModel;
+import com.api.busTime.model.entities.UserRoles;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

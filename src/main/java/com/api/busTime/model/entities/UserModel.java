@@ -1,4 +1,4 @@
-package com.api.busTime.models;
+package com.api.busTime.model.entities;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

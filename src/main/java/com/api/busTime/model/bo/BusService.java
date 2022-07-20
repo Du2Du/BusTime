@@ -1,14 +1,12 @@
-package com.api.busTime.services;
+package com.api.busTime.model.bo;
 
-import com.api.busTime.dtos.CreateBusDTO;
-import com.api.busTime.dtos.UpdateBusDTO;
-import com.api.busTime.models.BusModel;
+import com.api.busTime.model.dtos.CreateBusDTO;
+import com.api.busTime.model.dtos.UpdateBusDTO;
+import com.api.busTime.model.entities.BusModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.util.Streamable;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 public interface BusService {
     

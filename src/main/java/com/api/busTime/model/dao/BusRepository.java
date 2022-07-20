@@ -1,6 +1,6 @@
-package com.api.busTime.repositories;
+package com.api.busTime.model.dao;
 
-import com.api.busTime.models.BusModel;
+import com.api.busTime.model.entities.BusModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
