@@ -1,6 +1,6 @@
 package com.api.busTime.configs;
 
-import com.api.busTime.services.impl.CustomUserDetailsServiceImpl;
+import com.api.busTime.model.bo.impl.CustomUserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -87,8 +87,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "/**/*.html",
                         "/**/*.css",
                         "/**/*.js").permitAll()
-                .antMatchers("/v1/auth/**").permitAll().antMatchers(HttpMethod.POST, "/v1/users").permitAll()
-                .anyRequest().authenticated().and();
+                .antMatchers("/api/v1/auth/**").permitAll().antMatchers(HttpMethod.POST, "/api/v1/users").permitAll().antMatchers("/**/*").permitAll()
+                .anyRequest().authenticated()  .and()
+                .logout().logoutUrl("/logout").logoutSuccessUrl("/login").deleteCookies("refreshToken").deleteCookies("accessToken").invalidateHttpSession(true)
+                .and();
 
         http.addFilterBefore(tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
