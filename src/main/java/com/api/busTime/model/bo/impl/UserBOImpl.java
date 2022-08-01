@@ -10,6 +10,7 @@ import com.api.busTime.model.dao.UserDAO;
 import com.api.busTime.model.bo.TokenProvider;
 import com.api.busTime.model.bo.UsersBO;
 import com.api.busTime.utils.CookieUtil;
+import org.apache.coyote.Response;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -64,6 +65,7 @@ public class UserBOImpl implements UsersBO {
     }
 
     //Método que irá criar o usuário
+    @Override
     public User create(CreateUserDTO userDTO) {
         //Verificação se existe algum usuário com o email cadastrado
         Optional<User> userOptional = this.userDAO.findUserByEmail(userDTO.getEmail());
@@ -91,6 +93,7 @@ public class UserBOImpl implements UsersBO {
     }
 
     //Método que retorna todos os usuário
+    @Override
     public ResponseEntity<List<User>> findAll() {
         List<User> allUsers;
         User userAdmin = me();
@@ -107,6 +110,8 @@ public class UserBOImpl implements UsersBO {
 
     }
 
+    //Método que atualiza o atributo isAdmin de um usuario
+    @Override
     public ResponseEntity<User> setAdminUser(Long userId, boolean isAdmin) {
         User user = userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
         User userAdmin = me();
@@ -123,6 +128,8 @@ public class UserBOImpl implements UsersBO {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
+    //Método que favorita um onibus
+    @Override
     public List<Bus> favoriteBus(Long busId, Long userId) {
         User user = userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
         Bus bus = busDAO.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
@@ -132,8 +139,10 @@ public class UserBOImpl implements UsersBO {
         userDAO.save(user);
         
         return user.getFavoriteBus();
-    } 
+    }
     
+    //Método que desfavorita um onibus
+    @Override
     public List<Bus> desfavoriteBus(Long busId, Long userId) {
         User user = userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
         Bus bus = busDAO.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
@@ -146,6 +155,7 @@ public class UserBOImpl implements UsersBO {
     }
 
     //Método que irá logar o usuário
+    @Override
     public ResponseEntity<LoginResponse> login(LoginRequest loginRequest, String accessToken, String refreshToken) {
         String email = loginRequest.getEmail();
         User user = this.findByEmail(email);
@@ -184,6 +194,7 @@ public class UserBOImpl implements UsersBO {
     }
 
     //Método que retorna os dados do usuário
+    @Override
     public User me() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
@@ -191,6 +202,7 @@ public class UserBOImpl implements UsersBO {
     }
 
     //Método que atualiza o token
+    @Override
     public ResponseEntity<LoginResponse> refresh(String accessToken, String refreshToken) {
         Boolean refreshTokenValid = tokenProvider.validateToken(refreshToken);
         if (!refreshTokenValid) {
@@ -211,12 +223,14 @@ public class UserBOImpl implements UsersBO {
     }
 
     //Método que irá pegar os dados de um usuário pelo id
+    @Override
     public User findById(Long userId) {
         //Realiza uma busca do usuário com o id recebido
         return this.userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
     }
 
     //Método que irá fazer o update do usuário
+    @Override
     public User update(Long userId, UpdateUserDTO updateUserDTO) {
         //Verificando se existe algum usuário com esse id
         User user = this.userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
@@ -228,12 +242,23 @@ public class UserBOImpl implements UsersBO {
     }
 
     //Método que irá deletar o usuário
-    public String delete(Long userId) {
-        //Procurando o usuário pelo id
-        User user = this.userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+    @Override
+    public ResponseEntity<String> delete(Long userId) {
+        User userAdmin = me();
 
-        this.userDAO.delete(user);
+        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(10, new SecureRandom());
+        Boolean password = bCryptPasswordEncoder.matches("123456", userAdmin.getPassword());
 
-        return "Usuário Deletado com sucesso";
+        if (userAdmin.getEmail().equals("eduardohilario.eha@gmail.com") && password) {
+
+            //Procurando o usuário pelo id
+            User user = this.userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+
+            this.userDAO.delete(user);
+            return ResponseEntity.ok("Usuário Deletado com sucesso");
+        }
+        
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        
     }
 }

@@ -25,7 +25,7 @@ public interface UsersBO {
     
     User me();
 
-    String delete(Long id);
+    ResponseEntity<String> delete(Long id);
 
     User update(Long id, UpdateUserDTO updateUserDTO);
 
