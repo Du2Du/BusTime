@@ -2,8 +2,8 @@ package com.api.busTime.model.bo.impl;
 
 import com.api.busTime.model.dtos.CustomUserDetails;
 import com.api.busTime.exceptions.ResourceNotFoundException;
-import com.api.busTime.model.entities.UserModel;
-import com.api.busTime.model.dao.UserRepository;
+import com.api.busTime.model.entities.User;
+import com.api.busTime.model.dao.UserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -15,14 +15,14 @@ import org.springframework.stereotype.Service;
  * @Date: 30.12.2019:09:07, Pzt
  **/
 @Service
-public class CustomUserDetailsServiceImpl implements UserDetailsService {
+public class CustomUserDetailsBOImpl implements UserDetailsService {
     @Autowired
-    private UserRepository userRepository;
+    private UserDAO userDAO;
 
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
-        UserModel user =
-                userRepository.findUserByEmail(s).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o email " + s));
+        User user =
+                userDAO.findUserByEmail(s).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com o email " + s));
         return new CustomUserDetails(user);
     }
 }

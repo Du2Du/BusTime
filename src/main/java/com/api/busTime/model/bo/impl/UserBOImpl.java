@@ -1,16 +1,19 @@
 package com.api.busTime.model.bo.impl;
 
+import com.api.busTime.model.dao.BusDAO;
 import com.api.busTime.model.dtos.*;
 import com.api.busTime.exceptions.EntityExistsException;
 import com.api.busTime.exceptions.ResourceNotFoundException;
-import com.api.busTime.model.entities.UserModel;
-import com.api.busTime.model.dao.UserRepository;
+import com.api.busTime.model.entities.Bus;
+import com.api.busTime.model.entities.User;
+import com.api.busTime.model.dao.UserDAO;
 import com.api.busTime.model.bo.TokenProvider;
-import com.api.busTime.model.bo.UsersService;
+import com.api.busTime.model.bo.UsersBO;
 import com.api.busTime.utils.CookieUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,13 +21,17 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
+import java.util.List;
 import java.util.Optional;
 
 @Service
-public class UserServiceImpl implements UsersService {
+public class UserBOImpl implements UsersBO {
 
     @Autowired
-    private UserRepository userRepository;
+    private UserDAO userDAO;
+
+    @Autowired
+    private BusDAO busDAO;
 
     @Autowired
     private TokenProvider tokenProvider;
@@ -32,13 +39,13 @@ public class UserServiceImpl implements UsersService {
     @Autowired
     private CookieUtil cookieUtil;
 
-    public UserServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public UserBOImpl(UserDAO userDAO) {
+        this.userDAO = userDAO;
     }
 
     //Método que procura usuário pelo email
-    private UserModel findByEmail(String email) {
-        return userRepository.findUserByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+    private User findByEmail(String email) {
+        return userDAO.findUserByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
     }
 
     //Método que adiciona o token de acesso
@@ -57,16 +64,16 @@ public class UserServiceImpl implements UsersService {
     }
 
     //Método que irá criar o usuário
-    public UserModel create(CreateUserDTO userDTO) {
+    public User create(CreateUserDTO userDTO) {
         //Verificação se existe algum usuário com o email cadastrado
-        Optional<UserModel> userOptional = this.userRepository.findUserByEmail(userDTO.getEmail());
-        Optional<UserModel> userOptionalCpf = this.userRepository.findUserByCpf(userDTO.getCpf());
+        Optional<User> userOptional = this.userDAO.findUserByEmail(userDTO.getEmail());
+        Optional<User> userOptionalCpf = this.userDAO.findUserByCpf(userDTO.getCpf());
 
         //Retornando erro caso exista um usuário com o email cadastrado
         if (userOptional.isPresent()) throw new EntityExistsException("Usuário com email ja cadsatrado");
         if (userOptionalCpf.isPresent()) throw new EntityExistsException("Usuário com cpf ja cadsatrado");
 
-        UserModel user = new UserModel();
+        User user = new User();
 
         //Colocando os valores de userDTO em user
         BeanUtils.copyProperties(userDTO, user);
@@ -80,13 +87,68 @@ public class UserServiceImpl implements UsersService {
         user.setIsAdmin(false);
 
         //Criando usuário
-        return this.userRepository.save(user);
+        return this.userDAO.save(user);
+    }
+
+    //Método que retorna todos os usuário
+    public ResponseEntity<List<User>> findAll() {
+        List<User> allUsers;
+        User userAdmin = me();
+        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(10, new SecureRandom());
+        Boolean password = bCryptPasswordEncoder.matches("123456", userAdmin.getPassword());
+
+        if (userAdmin.getEmail().equals("eduardohilario.eha@gmail.com") && password) {
+            allUsers = userDAO.findAll();
+            
+            return ResponseEntity.ok(allUsers);
+        }
+        
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+    }
+
+    public ResponseEntity<User> setAdminUser(Long userId, boolean isAdmin) {
+        User user = userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+        User userAdmin = me();
+        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(10, new SecureRandom());
+        Boolean password = bCryptPasswordEncoder.matches("123456", userAdmin.getPassword());
+
+        if (userAdmin.getEmail().equals("eduardohilario.eha@gmail.com") && password) {
+            user.setIsAdmin(isAdmin);
+            userDAO.save(user);
+            
+            return ResponseEntity.ok(user);
+        }
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
+
+    public List<Bus> favoriteBus(Long busId, Long userId) {
+        User user = userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+        Bus bus = busDAO.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
+        List<Bus> busList = user.getFavoriteBus();
+        busList.add(bus);
+        user.setFavoriteBus(busList);
+        userDAO.save(user);
+        
+        return user.getFavoriteBus();
+    } 
+    
+    public List<Bus> desfavoriteBus(Long busId, Long userId) {
+        User user = userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+        Bus bus = busDAO.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
+        List<Bus> busList = user.getFavoriteBus();
+        busList.remove(bus);
+        user.setFavoriteBus(busList);
+        userDAO.save(user);
+
+        return user.getFavoriteBus();
     }
 
     //Método que irá logar o usuário
     public ResponseEntity<LoginResponse> login(LoginRequest loginRequest, String accessToken, String refreshToken) {
         String email = loginRequest.getEmail();
-        UserModel user = this.findByEmail(email);
+        User user = this.findByEmail(email);
         Boolean accessTokenValid = tokenProvider.validateToken(accessToken);
         Boolean refreshTokenValid = tokenProvider.validateToken(refreshToken);
 
@@ -122,7 +184,7 @@ public class UserServiceImpl implements UsersService {
     }
 
     //Método que retorna os dados do usuário
-    public UserModel me() {
+    public User me() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         return this.findByEmail(customUserDetails.getUsername());
@@ -149,34 +211,28 @@ public class UserServiceImpl implements UsersService {
     }
 
     //Método que irá pegar os dados de um usuário pelo id
-    public UserModel findById(Long userId) {
+    public User findById(Long userId) {
         //Realiza uma busca do usuário com o id recebido
-        return this.userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+        return this.userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
     }
 
     //Método que irá fazer o update do usuário
-    public UserModel update(Long userId, UpdateUserDTO updateUserDTO) {
+    public User update(Long userId, UpdateUserDTO updateUserDTO) {
         //Verificando se existe algum usuário com esse id
-        UserModel user = this.userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+        User user = this.userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
 
         //Colocando os valores de updateUserDTO em user
         BeanUtils.copyProperties(updateUserDTO, user);
 
-        return this.userRepository.save(user);
-    }
-
-    //Deixei esse método inutil pq teria q arrumar o front de novo, arrumar os arquivos no backend de novo, então por enquanto continua aq. Aonde realmente faz o logout é no 
-    //SecurityConfig
-    public void logout(){
-    return;
+        return this.userDAO.save(user);
     }
 
     //Método que irá deletar o usuário
     public String delete(Long userId) {
         //Procurando o usuário pelo id
-        UserModel user = this.userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+        User user = this.userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
 
-        this.userRepository.delete(user);
+        this.userDAO.delete(user);
 
         return "Usuário Deletado com sucesso";
     }

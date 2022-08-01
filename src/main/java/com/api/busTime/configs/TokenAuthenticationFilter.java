@@ -1,7 +1,7 @@
 package com.api.busTime.configs;
 
 import com.api.busTime.model.bo.TokenProvider;
-import com.api.busTime.model.bo.impl.CustomUserDetailsServiceImpl;
+import com.api.busTime.model.bo.impl.CustomUserDetailsBOImpl;
 import com.api.busTime.utils.SecurityCipher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +31,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     private TokenProvider tokenProvider;
 
     @Autowired
-    private CustomUserDetailsServiceImpl customUserDetailsService;
+    private CustomUserDetailsBOImpl customUserDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,

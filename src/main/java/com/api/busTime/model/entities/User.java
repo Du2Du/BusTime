@@ -4,12 +4,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Entity
 @Table(name = "users")
-public class UserModel {
+public class User {
 
 
     @Id
@@ -23,6 +25,12 @@ public class UserModel {
     private Date birthDate;
     @Column(nullable = false)
     private String cpf;
+    @ManyToMany
+    @JoinTable(
+            name = "users_favorite_bus",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "favorite_bus_id"))
+    private List<Bus> favoriteBus;
 
     @Column(nullable = false)
     private Boolean isAdmin;

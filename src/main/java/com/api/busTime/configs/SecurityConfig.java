@@ -1,6 +1,6 @@
 package com.api.busTime.configs;
 
-import com.api.busTime.model.bo.impl.CustomUserDetailsServiceImpl;
+import com.api.busTime.model.bo.impl.CustomUserDetailsBOImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,7 +30,7 @@ import org.springframework.web.filter.CorsFilter;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
-    private CustomUserDetailsServiceImpl customUserDetailsService;
+    private CustomUserDetailsBOImpl customUserDetailsService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {

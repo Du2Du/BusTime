@@ -1,6 +1,6 @@
 package com.api.busTime.model.dtos;
 
-import com.api.busTime.model.entities.UserModel;
+import com.api.busTime.model.entities.User;
 import com.api.busTime.model.entities.UserRoles;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
@@ -13,9 +13,9 @@ import java.util.Collections;
 @Data
 public class 
 CustomUserDetails implements UserDetails {
-    private final UserModel user;
+    private final User user;
 
-    public CustomUserDetails(UserModel user) {
+    public CustomUserDetails(User user) {
         this.user = user;
     }
 
