@@ -26,10 +26,6 @@ public class User {
     @Column(nullable = false, unique = true)
     private String cpf;
     @ManyToMany
-    @JoinTable(
-            name = "users_favorite_bus",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "favorite_bus_id"))
     private List<Bus> favoriteBus;
    
 
