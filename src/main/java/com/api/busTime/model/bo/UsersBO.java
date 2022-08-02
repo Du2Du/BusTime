@@ -27,7 +27,7 @@ public interface UsersBO {
 
     ResponseEntity<String> delete(Long id);
 
-    User update(Long id, UpdateUserDTO updateUserDTO);
+    ResponseEntity<User> update(Long id, UpdateUserDTO updateUserDTO);
 
     ResponseEntity<LoginResponse> login(LoginRequest loginRequest, String accessToken, String refreshToken);
 

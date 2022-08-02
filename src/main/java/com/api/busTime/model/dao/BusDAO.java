@@ -12,6 +12,6 @@ public interface BusDAO extends PagingAndSortingRepository<Bus, Long> {
     @Query("SELECT b FROM Bus b WHERE lower(b.line) like lower(?1)")
     Page<Bus> listBusForLine(String line, Pageable pageable);
 
-    @Query("SELECT b FROM Bus b WHERE b.idUserAdmin = ?1")
+    @Query("SELECT b FROM Bus b INNER JOIN User u ON b.idUserAdmin = u.id WHERE u.id = ?1")
     List<Bus> listBusForUserId(Long userId);
 }

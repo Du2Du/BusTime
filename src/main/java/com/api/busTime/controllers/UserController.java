@@ -43,7 +43,7 @@ public class UserController {
         return this.usersBO.create(createUserDTO);
     }
 
-    @GetMapping("/favorite-bus/{id}")
+            @GetMapping("/favorite-bus/{id}")
     public List<Bus> favoriteBus(@PathVariable("id") Long userId, @RequestParam("bus") Long busId) {
         return this.usersBO.favoriteBus(busId, userId);
     }  
@@ -59,7 +59,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public User update(@PathVariable Long id, @RequestBody @Validated UpdateUserDTO updateUserDTO) {
+    public ResponseEntity<User> update(@PathVariable Long id, @RequestBody @Validated UpdateUserDTO updateUserDTO) {
         return this.usersBO.update(id, updateUserDTO);
     }
 

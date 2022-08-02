@@ -1,16 +1,15 @@
 package com.api.busTime.model.bo.impl;
 
 import com.api.busTime.model.dao.BusDAO;
+import com.api.busTime.model.dao.PermissionsGroupDAO;
 import com.api.busTime.model.dtos.*;
 import com.api.busTime.exceptions.EntityExistsException;
 import com.api.busTime.exceptions.ResourceNotFoundException;
-import com.api.busTime.model.entities.Bus;
-import com.api.busTime.model.entities.User;
+import com.api.busTime.model.entities.*;
 import com.api.busTime.model.dao.UserDAO;
 import com.api.busTime.model.bo.TokenProvider;
 import com.api.busTime.model.bo.UsersBO;
 import com.api.busTime.utils.CookieUtil;
-import org.apache.coyote.Response;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -35,10 +34,14 @@ public class UserBOImpl implements UsersBO {
     private BusDAO busDAO;
 
     @Autowired
+    private PermissionsGroupDAO permissionsGroupDAO;
+
+    @Autowired
     private TokenProvider tokenProvider;
 
     @Autowired
     private CookieUtil cookieUtil;
+    
 
     public UserBOImpl(UserDAO userDAO) {
         this.userDAO = userDAO;
@@ -76,7 +79,7 @@ public class UserBOImpl implements UsersBO {
         if (userOptionalCpf.isPresent()) throw new EntityExistsException("Usuário com cpf ja cadsatrado");
 
         User user = new User();
-
+        
         //Colocando os valores de userDTO em user
         BeanUtils.copyProperties(userDTO, user);
 
@@ -86,7 +89,7 @@ public class UserBOImpl implements UsersBO {
         user.setPassword(encodedPassword);
 
         //Deixando usuário como user normal
-        user.setIsAdmin(false);
+        user.setPermissionsGroup(this.permissionsGroupDAO.findByName(UserRoles.DEFAULT));
 
         //Criando usuário
         return this.userDAO.save(user);
@@ -97,15 +100,12 @@ public class UserBOImpl implements UsersBO {
     public ResponseEntity<List<User>> findAll() {
         List<User> allUsers;
         User userAdmin = me();
-        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(10, new SecureRandom());
-        Boolean password = bCryptPasswordEncoder.matches("123456", userAdmin.getPassword());
-
-        if (userAdmin.getEmail().equals("eduardohilario.eha@gmail.com") && password) {
+        if (userAdmin.getPermissionsGroup().getName() == UserRoles.SUPER_ADMINISTRATOR) {
             allUsers = userDAO.findAll();
-            
+
             return ResponseEntity.ok(allUsers);
         }
-        
+
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
     }
@@ -115,13 +115,12 @@ public class UserBOImpl implements UsersBO {
     public ResponseEntity<User> setAdminUser(Long userId, boolean isAdmin) {
         User user = userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
         User userAdmin = me();
-        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(10, new SecureRandom());
-        Boolean password = bCryptPasswordEncoder.matches("123456", userAdmin.getPassword());
-
-        if (userAdmin.getEmail().equals("eduardohilario.eha@gmail.com") && password) {
-            user.setIsAdmin(isAdmin);
+        
+        if (userAdmin.getPermissionsGroup().getName() == UserRoles.SUPER_ADMINISTRATOR) {
+            UserRoles permission = isAdmin ? UserRoles.ADMINISTRATOR : UserRoles.DEFAULT;
+            user.setPermissionsGroup(this.permissionsGroupDAO.findByName(permission));
             userDAO.save(user);
-            
+
             return ResponseEntity.ok(user);
         }
 
@@ -137,10 +136,10 @@ public class UserBOImpl implements UsersBO {
         busList.add(bus);
         user.setFavoriteBus(busList);
         userDAO.save(user);
-        
+
         return user.getFavoriteBus();
     }
-    
+
     //Método que desfavorita um onibus
     @Override
     public List<Bus> desfavoriteBus(Long busId, Long userId) {
@@ -157,6 +156,7 @@ public class UserBOImpl implements UsersBO {
     //Método que irá logar o usuário
     @Override
     public ResponseEntity<LoginResponse> login(LoginRequest loginRequest, String accessToken, String refreshToken) {
+
         String email = loginRequest.getEmail();
         User user = this.findByEmail(email);
         Boolean accessTokenValid = tokenProvider.validateToken(accessToken);
@@ -231,14 +231,17 @@ public class UserBOImpl implements UsersBO {
 
     //Método que irá fazer o update do usuário
     @Override
-    public User update(Long userId, UpdateUserDTO updateUserDTO) {
+    public ResponseEntity<User> update(Long userId, UpdateUserDTO updateUserDTO) {
         //Verificando se existe algum usuário com esse id
+        User currentUser = me();
         User user = this.userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+
+        if (!currentUser.getId().equals(userId)) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         //Colocando os valores de updateUserDTO em user
         BeanUtils.copyProperties(updateUserDTO, user);
 
-        return this.userDAO.save(user);
+        return ResponseEntity.ok(this.userDAO.save(user));
     }
 
     //Método que irá deletar o usuário
@@ -257,8 +260,8 @@ public class UserBOImpl implements UsersBO {
             this.userDAO.delete(user);
             return ResponseEntity.ok("Usuário Deletado com sucesso");
         }
-        
+
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        
+
     }
 }

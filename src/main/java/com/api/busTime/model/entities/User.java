@@ -19,11 +19,11 @@ public class User {
     private Long id;
     @Column(nullable = false)
     private String name;
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
     @Column(nullable = false)
     private Date birthDate;
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String cpf;
     @ManyToMany
     @JoinTable(
@@ -31,10 +31,15 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "favorite_bus_id"))
     private List<Bus> favoriteBus;
+   
 
-    @Column(nullable = false)
-    private Boolean isAdmin;
+    @ManyToOne
+    private PermissionsGroup permissionsGroup;
+
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(nullable = false)
     private String password;
+
+
+  
 }
