@@ -11,10 +11,13 @@ import com.api.busTime.model.entities.Bus;
 import com.api.busTime.model.dao.BusDAO;
 import com.api.busTime.model.bo.BusBO;
 import com.api.busTime.model.entities.User;
+import com.api.busTime.model.entities.UserRoles;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -26,81 +29,91 @@ public class BusBOImpl implements BusBO {
 
     @Autowired
     private BusDAO busDAO;
-    
+
     @Autowired
     private UsersBO userBO;
 
+
     //Método que cria o onibus
     @Override
-    public Bus create(CreateBusDTO createBusDTO) {
-
+    public ResponseEntity<Bus> create(CreateBusDTO createBusDTO) {
+        User user = userBO.me();
+        
+        if (user.getPermissionsGroup().getName() == UserRoles.DEFAULT)
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        
         Bus bus = new Bus();
 
         //Colocando os valores de userDTO em user
         BeanUtils.copyProperties(createBusDTO, bus);
 
-        return this.busDAO.save(bus);
+        return ResponseEntity.ok(this.busDAO.save(bus));
     }
 
     //Método que atualiza as informações do onibus
     @Override
-    public Bus update(Long busId, UpdateBusDTO updateBusDTO) {
+    public ResponseEntity<Bus> update(Long busId, UpdateBusDTO updateBusDTO) {
         User user = userBO.me();
-
+        
+        if (user.getPermissionsGroup().getName() == UserRoles.DEFAULT)
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        
         //Verificando se existe algum onibus com esse id
         Bus bus = this.busDAO.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
-        
+
         //Verificando se o id do usuárioAdmin é o mesmo do usuário logado
         if (!bus.getIdUserAdmin().equals(user.getId()))
-            throw new ResourceNotFoundException("Você não pode alterar esse ônibus");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         //Colocando os valores de userDTO em user
         BeanUtils.copyProperties(updateBusDTO, bus);
 
-        return this.busDAO.save(bus);
+        return ResponseEntity.ok(this.busDAO.save(bus));
     }
 
     //Método que irá deletar o onibus
     @Override
-    public String delete(Long busId) {
+    public ResponseEntity<String> delete(Long busId) {
         User user = userBO.me();
-
-
+        
+        if (user.getPermissionsGroup().getName() == UserRoles.DEFAULT)
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        
         //Verificando se existe algum onibus com esse id
         Bus bus = this.busDAO.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
 
         //Verificando se o id do usuárioAdmin é o mesmo do usuário logado
         if (!bus.getIdUserAdmin().equals(user.getId()))
-            throw new Forbbiden("Você não pode deletar esse ônibus");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         this.busDAO.delete(bus);
 
-        return "Ônibus deletado com sucesso";
+        return ResponseEntity.ok("Ônibus deletado com sucesso");
     }
 
     //Método que lista o onibus por id
     @Override
-    public Bus getById(Long busId) {
+    public ResponseEntity<Bus> getById(Long busId) {
         Bus bus = this.busDAO.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
 
-        return bus;
+        return ResponseEntity.ok(bus);
     }
 
     //Método que retorna os onibus criados pelo usuario
     @Override
-    public List<Bus> findBusForUser(Long userId) {
+    public ResponseEntity<List<Bus>> findBusForUser(Long userId) {
         User user = userBO.me();
-
-        if (!userId.equals(user.getId()))
-            throw new Forbbiden("O id do usuário não bate com o logado!");
         
-        return this.busDAO.listBusForUserId(userId);
+        if (!userId.equals(user.getId()))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+        return ResponseEntity.ok(this.busDAO.listBusForUserId(userId));
     }
-    
+
     //Método que lista os onibus pela linha
     @Override
-    public Page<Bus> listForLine (String line, Pageable pageable){
-        return  this.busDAO.listBusForLine(line, pageable);
+    public Page<Bus> listForLine(String line, Pageable pageable) {
+        return this.busDAO.listBusForLine(line, pageable);
     }
 
     //Método que lista os onibus paginado

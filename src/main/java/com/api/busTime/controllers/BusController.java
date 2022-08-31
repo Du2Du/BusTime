@@ -7,6 +7,7 @@ import com.api.busTime.model.bo.BusBO;
 import com.api.busTime.model.bo.UsersBO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,31 +27,32 @@ public class BusController {
     }
 
     @GetMapping("/{id}")
-    public Bus getById(@PathVariable Long id){
+    public ResponseEntity<Bus> getById(@PathVariable Long id){
         return this.busBO.getById(id);
     }
     
     @GetMapping("/user/{id}")
-    public List<Bus> findBusForUser(@PathVariable Long id){
+    public ResponseEntity<List<Bus>> findBusForUser(@PathVariable Long id){
         return this.busBO.findBusForUser(id);
     }
+    
     @GetMapping("/line")
     public Page<Bus> listForLine(@RequestParam(name = "line") String line, Pageable pageable){
         return this.busBO.listForLine(line, pageable);
     }
 
     @PostMapping
-    public Bus create(@RequestBody @Validated CreateBusDTO createBusDTO) {
+    public ResponseEntity<Bus> create(@RequestBody @Validated CreateBusDTO createBusDTO) {
         return this.busBO.create(createBusDTO);
     } 
     
     @PutMapping("/{id}")
-    public Bus update(@PathVariable Long id, @RequestBody @Validated UpdateBusDTO updateBusDTO) {
+    public ResponseEntity<Bus> update(@PathVariable Long id, @RequestBody @Validated UpdateBusDTO updateBusDTO) {
         return this.busBO.update(id, updateBusDTO);
     }
     
     @DeleteMapping("/{id}")
-    public String delete(@PathVariable Long id){
+    public ResponseEntity<String> delete(@PathVariable Long id){
         return this.busBO.delete(id);
     }
     

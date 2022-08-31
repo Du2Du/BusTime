@@ -249,10 +249,7 @@ public class UserBOImpl implements UsersBO {
     public ResponseEntity<String> delete(Long userId) {
         User userAdmin = me();
 
-        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(10, new SecureRandom());
-        Boolean password = bCryptPasswordEncoder.matches("123456", userAdmin.getPassword());
-
-        if (userAdmin.getEmail().equals("eduardohilario.eha@gmail.com") && password) {
+        if (userAdmin.getPermissionsGroup().getName() == UserRoles.SUPER_ADMINISTRATOR) {
 
             //Procurando o usuário pelo id
             User user = this.userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));

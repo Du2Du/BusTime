@@ -17,12 +17,12 @@ public class PermissionsController {
     private PermissionsBOImpl permissionsBOImpl;
 
     @GetMapping("")
-    public List<PermissionsGroup> findAll(){
+    public ResponseEntity<List<PermissionsGroup>> findAll(){
       return permissionsBOImpl.findAll();
     };
 
     @GetMapping("/{id}")
-    public PermissionsGroup findById(@PathVariable int id){
+    public ResponseEntity<PermissionsGroup> findById(@PathVariable int id){
         return permissionsBOImpl.findById(id);
     };
 }
