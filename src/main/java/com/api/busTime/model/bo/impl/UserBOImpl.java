@@ -41,7 +41,7 @@ public class UserBOImpl implements UsersBO {
 
     @Autowired
     private CookieUtil cookieUtil;
-    
+
 
     public UserBOImpl(UserDAO userDAO) {
         this.userDAO = userDAO;
@@ -79,7 +79,7 @@ public class UserBOImpl implements UsersBO {
         if (userOptionalCpf.isPresent()) throw new EntityExistsException("Usuário com cpf ja cadsatrado");
 
         User user = new User();
-        
+
         //Colocando os valores de userDTO em user
         BeanUtils.copyProperties(userDTO, user);
 
@@ -112,19 +112,23 @@ public class UserBOImpl implements UsersBO {
 
     //Método que atualiza o atributo isAdmin de um usuario
     @Override
-    public ResponseEntity<User> setAdminUser(Long userId, boolean isAdmin) {
+    public ResponseEntity<User> setAdminUser(Long userId,UpdatePermissionDTO updatePermissionDTO) {
         User user = userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
         User userAdmin = me();
-        
-        if (userAdmin.getPermissionsGroup().getName() == UserRoles.SUPER_ADMINISTRATOR) {
-            UserRoles permission = isAdmin ? UserRoles.ADMINISTRATOR : UserRoles.DEFAULT;
-            user.setPermissionsGroup(this.permissionsGroupDAO.findByName(permission));
-            userDAO.save(user);
 
-            return ResponseEntity.ok(user);
-        }
+        if (userAdmin.getPermissionsGroup().getName() != UserRoles.SUPER_ADMINISTRATOR)
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        PermissionsGroup permissionsGroup = this.permissionsGroupDAO.findByName(updatePermissionDTO.getPermissionGroup());
+
+        if (permissionsGroup == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        user.setPermissionsGroup(permissionsGroup);
+
+        userDAO.save(user);
+
+        return ResponseEntity.ok(user);
+
+
     }
 
     //Método que favorita um onibus

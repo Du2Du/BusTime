@@ -1,10 +1,12 @@
 package com.api.busTime.controllers;
 
 import com.api.busTime.model.dtos.CreateUserDTO;
+import com.api.busTime.model.dtos.UpdatePermissionDTO;
 import com.api.busTime.model.dtos.UpdateUserDTO;
 import com.api.busTime.model.entities.Bus;
 import com.api.busTime.model.entities.User;
 import com.api.busTime.model.bo.UsersBO;
+import com.api.busTime.model.entities.UserRoles;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -48,9 +50,9 @@ public class UserController {
         return this.usersBO.favoriteBus(busId, userId);
     }  
     
-    @GetMapping("/change-admin/{id}")
-    public ResponseEntity<User> setAdminUser(@PathVariable("id") Long userId, @RequestParam("admin") boolean isAdmin) {
-        return this.usersBO.setAdminUser(userId, isAdmin);
+    @PutMapping("/change-admin/{id}")
+    public ResponseEntity<User> setAdminUser(@PathVariable("id") Long userId, @RequestBody @Validated UpdatePermissionDTO updatePermissionDTO) {
+        return this.usersBO.setAdminUser(userId, updatePermissionDTO);
     }
     
     @GetMapping("/desfavorite-bus/{id}")
