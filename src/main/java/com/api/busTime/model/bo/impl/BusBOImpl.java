@@ -37,11 +37,6 @@ public class BusBOImpl implements BusBO {
     //Método que cria o onibus
     @Override
     public ResponseEntity<Bus> create(CreateBusDTO createBusDTO) {
-        User user = userBO.me();
-        
-        if (user.getPermissionsGroup().getName() == UserRoles.DEFAULT)
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        
         Bus bus = new Bus();
 
         //Colocando os valores de userDTO em user
@@ -54,9 +49,6 @@ public class BusBOImpl implements BusBO {
     @Override
     public ResponseEntity<Bus> update(Long busId, UpdateBusDTO updateBusDTO) {
         User user = userBO.me();
-        
-        if (user.getPermissionsGroup().getName() == UserRoles.DEFAULT)
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         
         //Verificando se existe algum onibus com esse id
         Bus bus = this.busDAO.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
@@ -75,9 +67,6 @@ public class BusBOImpl implements BusBO {
     @Override
     public ResponseEntity<String> delete(Long busId) {
         User user = userBO.me();
-        
-        if (user.getPermissionsGroup().getName() == UserRoles.DEFAULT)
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         
         //Verificando se existe algum onibus com esse id
         Bus bus = this.busDAO.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));

@@ -24,9 +24,6 @@ public class PermissionsBOImpl implements PermissionsBO {
 
     @Override
     public ResponseEntity<List<PermissionsGroup>> findAll() {
-        User user = userBO.me();
-        if (user.getPermissionsGroup().getName() != UserRoles.SUPER_ADMINISTRATOR)
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         
         List<PermissionsGroup> permissionsGroups = permissionsGroupDAO.findAll();
 
@@ -35,12 +32,7 @@ public class PermissionsBOImpl implements PermissionsBO {
 
     @Override
     public ResponseEntity<PermissionsGroup> findById(int id) {
-        User user = userBO.me();
-
-        if (user.getPermissionsGroup().getName() != UserRoles.SUPER_ADMINISTRATOR)
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-
-
+        
         PermissionsGroup permissionsGroup = permissionsGroupDAO.findById(id);
 
         return ResponseEntity.ok(permissionsGroup);

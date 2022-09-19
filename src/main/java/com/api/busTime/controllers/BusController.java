@@ -5,6 +5,7 @@ import com.api.busTime.model.dtos.UpdateBusDTO;
 import com.api.busTime.model.entities.Bus;
 import com.api.busTime.model.bo.BusBO;
 import com.api.busTime.model.bo.UsersBO;
+import com.api.busTime.utils.AdminVerify;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -41,16 +42,19 @@ public class BusController {
         return this.busBO.listForLine(line, pageable);
     }
 
+    @AdminVerify
     @PostMapping
     public ResponseEntity<Bus> create(@RequestBody @Validated CreateBusDTO createBusDTO) {
         return this.busBO.create(createBusDTO);
-    } 
-    
+    }
+
+    @AdminVerify
     @PutMapping("/{id}")
     public ResponseEntity<Bus> update(@PathVariable Long id, @RequestBody @Validated UpdateBusDTO updateBusDTO) {
         return this.busBO.update(id, updateBusDTO);
     }
-    
+
+    @AdminVerify
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id){
         return this.busBO.delete(id);

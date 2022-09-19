@@ -99,25 +99,15 @@ public class UserBOImpl implements UsersBO {
     @Override
     public ResponseEntity<List<User>> findAll() {
         List<User> allUsers;
-        User userAdmin = me();
-        if (userAdmin.getPermissionsGroup().getName() == UserRoles.SUPER_ADMINISTRATOR) {
-            allUsers = userDAO.findAll();
-
-            return ResponseEntity.ok(allUsers);
-        }
-
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-
+        allUsers = userDAO.findAll();
+        return ResponseEntity.ok(allUsers);
     }
 
     //Método que atualiza o atributo isAdmin de um usuario
     @Override
-    public ResponseEntity<User> setAdminUser(Long userId,UpdatePermissionDTO updatePermissionDTO) {
+    public ResponseEntity<User> setAdminUser(Long userId, UpdatePermissionDTO updatePermissionDTO) {
         User user = userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
-        User userAdmin = me();
 
-        if (userAdmin.getPermissionsGroup().getName() != UserRoles.SUPER_ADMINISTRATOR)
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         PermissionsGroup permissionsGroup = this.permissionsGroupDAO.findByName(updatePermissionDTO.getPermissionGroup());
 
@@ -251,18 +241,11 @@ public class UserBOImpl implements UsersBO {
     //Método que irá deletar o usuário
     @Override
     public ResponseEntity<String> delete(Long userId) {
-        User userAdmin = me();
 
-        if (userAdmin.getPermissionsGroup().getName() == UserRoles.SUPER_ADMINISTRATOR) {
+        //Procurando o usuário pelo id
+        User user = this.userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
 
-            //Procurando o usuário pelo id
-            User user = this.userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
-
-            this.userDAO.delete(user);
-            return ResponseEntity.ok("Usuário Deletado com sucesso");
-        }
-
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-
+        this.userDAO.delete(user);
+        return ResponseEntity.ok("Usuário Deletado com sucesso");
     }
 }

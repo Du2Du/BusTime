@@ -7,6 +7,8 @@ import com.api.busTime.model.entities.Bus;
 import com.api.busTime.model.entities.User;
 import com.api.busTime.model.bo.UsersBO;
 import com.api.busTime.model.entities.UserRoles;
+import com.api.busTime.utils.AdminVerify;
+import com.api.busTime.utils.SuperAdminVerify;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -25,6 +27,7 @@ public class UserController {
         this.usersBO = usersBO;
     }
 
+    @SuperAdminVerify
     @GetMapping("")
     public ResponseEntity<List<User>> findAll() {
         return this.usersBO.findAll();
@@ -45,16 +48,17 @@ public class UserController {
         return this.usersBO.create(createUserDTO);
     }
 
-            @GetMapping("/favorite-bus/{id}")
+    @GetMapping("/favorite-bus/{id}")
     public List<Bus> favoriteBus(@PathVariable("id") Long userId, @RequestParam("bus") Long busId) {
         return this.usersBO.favoriteBus(busId, userId);
-    }  
-    
+    }
+
+    @SuperAdminVerify
     @PutMapping("/change-admin/{id}")
     public ResponseEntity<User> setAdminUser(@PathVariable("id") Long userId, @RequestBody @Validated UpdatePermissionDTO updatePermissionDTO) {
         return this.usersBO.setAdminUser(userId, updatePermissionDTO);
     }
-    
+
     @GetMapping("/desfavorite-bus/{id}")
     public List<Bus> desfavoriteBus(@PathVariable("id") Long userId, @RequestParam("bus") Long busId) {
         return this.usersBO.desfavoriteBus(busId, userId);
@@ -65,6 +69,7 @@ public class UserController {
         return this.usersBO.update(id, updateUserDTO);
     }
 
+    @SuperAdminVerify
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         return this.usersBO.delete(id);
