@@ -21,17 +21,13 @@ public class Authorization implements HandlerInterceptor {
         final AdminVerify adminVerify = ((HandlerMethod) handler)
                 .getMethod().getAnnotation((AdminVerify.class));
 
-        final SuperAdminVerify superAdminVerify = ((HandlerMethod) handler)
-                .getMethod().getAnnotation((SuperAdminVerify.class));
+        if (adminVerify == null) return true;
 
-        if ((superAdminVerify != null && usersBO.me().getPermissionsGroup().getName() == UserRoles.SUPER_ADMINISTRATOR) || (adminVerify != null && usersBO.me().getPermissionsGroup().getName() != UserRoles.DEFAULT))
+        if ((adminVerify.validationType() == ValidationType.ADMIN && usersBO.me().getPermissionsGroup().getName() != UserRoles.DEFAULT) || (adminVerify.validationType() == ValidationType.SUPER_ADMIN && usersBO.me().getPermissionsGroup().getName() == UserRoles.SUPER_ADMINISTRATOR))
             return true;
+        
+        response.setStatus(403);
+        return false;
 
-        if ((superAdminVerify != null && usersBO.me().getPermissionsGroup().getName() != UserRoles.SUPER_ADMINISTRATOR) || (adminVerify != null && usersBO.me().getPermissionsGroup().getName() == UserRoles.DEFAULT)) {
-            response.setStatus(403);
-            return false;
-        }
-
-        return true;
     }
 }

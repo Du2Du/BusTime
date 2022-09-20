@@ -6,10 +6,8 @@ import com.api.busTime.model.dtos.UpdateUserDTO;
 import com.api.busTime.model.entities.Bus;
 import com.api.busTime.model.entities.User;
 import com.api.busTime.model.bo.UsersBO;
-import com.api.busTime.model.entities.UserRoles;
 import com.api.busTime.utils.AdminVerify;
-import com.api.busTime.utils.SuperAdminVerify;
-import org.springframework.data.jpa.repository.Query;
+import com.api.busTime.utils.ValidationType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +25,7 @@ public class UserController {
         this.usersBO = usersBO;
     }
 
-    @SuperAdminVerify
+    @AdminVerify(validationType = ValidationType.SUPER_ADMIN)
     @GetMapping("")
     public ResponseEntity<List<User>> findAll() {
         return this.usersBO.findAll();
@@ -53,7 +51,7 @@ public class UserController {
         return this.usersBO.favoriteBus(busId, userId);
     }
 
-    @SuperAdminVerify
+    @AdminVerify(validationType = ValidationType.SUPER_ADMIN)
     @PutMapping("/change-admin/{id}")
     public ResponseEntity<User> setAdminUser(@PathVariable("id") Long userId, @RequestBody @Validated UpdatePermissionDTO updatePermissionDTO) {
         return this.usersBO.setAdminUser(userId, updatePermissionDTO);
@@ -69,7 +67,7 @@ public class UserController {
         return this.usersBO.update(id, updateUserDTO);
     }
 
-    @SuperAdminVerify
+    @AdminVerify(validationType = ValidationType.SUPER_ADMIN)
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         return this.usersBO.delete(id);

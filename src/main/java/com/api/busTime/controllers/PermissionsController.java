@@ -2,7 +2,8 @@ package com.api.busTime.controllers;
 
 import com.api.busTime.model.bo.impl.PermissionsBOImpl;
 import com.api.busTime.model.entities.PermissionsGroup;
-import com.api.busTime.utils.SuperAdminVerify;
+import com.api.busTime.utils.AdminVerify;
+import com.api.busTime.utils.ValidationType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,13 +18,13 @@ public class PermissionsController {
     @Autowired
     private PermissionsBOImpl permissionsBOImpl;
 
-    @SuperAdminVerify
+    @AdminVerify(validationType = ValidationType.SUPER_ADMIN)
     @GetMapping("")
     public ResponseEntity<List<PermissionsGroup>> findAll(){
       return permissionsBOImpl.findAll();
     };
-    
-    @SuperAdminVerify
+
+    @AdminVerify(validationType = ValidationType.SUPER_ADMIN)
     @GetMapping("/{id}")
     public ResponseEntity<PermissionsGroup> findById(@PathVariable int id){
         return permissionsBOImpl.findById(id);
