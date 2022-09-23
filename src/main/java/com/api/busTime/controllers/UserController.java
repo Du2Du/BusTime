@@ -1,8 +1,6 @@
 package com.api.busTime.controllers;
 
-import com.api.busTime.model.dtos.CreateUserDTO;
-import com.api.busTime.model.dtos.UpdatePermissionDTO;
-import com.api.busTime.model.dtos.UpdateUserDTO;
+import com.api.busTime.model.dtos.*;
 import com.api.busTime.model.entities.Bus;
 import com.api.busTime.model.entities.User;
 import com.api.busTime.model.bo.UsersBO;
@@ -27,43 +25,43 @@ public class UserController {
 
     @AdminVerify(validationType = ValidationType.SUPER_ADMIN)
     @GetMapping("")
-    public ResponseEntity<List<User>> findAll() {
+    public ResponseEntity<List<UserDTO>> findAll() {
         return this.usersBO.findAll();
     }
 
     @GetMapping("/{id}")
-    public User findById(@PathVariable Long id) {
+    public UserDTO findById(@PathVariable Long id) {
         return this.usersBO.findById(id);
     }
 
     @GetMapping("/me")
-    public User me() {
+    public UserDTO me() {
         return this.usersBO.me();
     }
 
     @PostMapping
-    public User create(@RequestBody @Validated CreateUserDTO createUserDTO) {
+    public UserDTO create(@RequestBody @Validated CreateUserDTO createUserDTO) {
         return this.usersBO.create(createUserDTO);
     }
 
     @GetMapping("/favorite-bus/{id}")
-    public List<Bus> favoriteBus(@PathVariable("id") Long userId, @RequestParam("bus") Long busId) {
+    public ResponseEntity<List<BusDTO>> favoriteBus(@PathVariable("id") Long userId, @RequestParam("bus") Long busId) {
         return this.usersBO.favoriteBus(busId, userId);
     }
 
     @AdminVerify(validationType = ValidationType.SUPER_ADMIN)
     @PutMapping("/change-admin/{id}")
-    public ResponseEntity<User> setAdminUser(@PathVariable("id") Long userId, @RequestBody @Validated UpdatePermissionDTO updatePermissionDTO) {
+    public ResponseEntity<UserDTO> setAdminUser(@PathVariable("id") Long userId, @RequestBody @Validated UpdatePermissionDTO updatePermissionDTO) {
         return this.usersBO.setAdminUser(userId, updatePermissionDTO);
     }
 
     @GetMapping("/desfavorite-bus/{id}")
-    public List<Bus> desfavoriteBus(@PathVariable("id") Long userId, @RequestParam("bus") Long busId) {
+    public ResponseEntity<List<BusDTO>> desfavoriteBus(@PathVariable("id") Long userId, @RequestParam("bus") Long busId) {
         return this.usersBO.desfavoriteBus(busId, userId);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> update(@PathVariable Long id, @RequestBody @Validated UpdateUserDTO updateUserDTO) {
+    public ResponseEntity<UserDTO> update(@PathVariable Long id, @RequestBody @Validated UpdateUserDTO updateUserDTO) {
         return this.usersBO.update(id, updateUserDTO);
     }
 

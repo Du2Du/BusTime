@@ -10,8 +10,9 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+//Classe do interceptador onde faço a verificação de permissão
 @Component
-public class Authorization implements HandlerInterceptor {
+public class Interceptor implements HandlerInterceptor {
 
     @Autowired
     private UsersBO usersBO;
@@ -21,11 +22,10 @@ public class Authorization implements HandlerInterceptor {
         final AdminVerify adminVerify = ((HandlerMethod) handler)
                 .getMethod().getAnnotation((AdminVerify.class));
 
-        if (adminVerify == null) return true;
-
-        if ((adminVerify.validationType() == ValidationType.ADMIN && usersBO.me().getPermissionsGroup().getName() != UserRoles.DEFAULT) || (adminVerify.validationType() == ValidationType.SUPER_ADMIN && usersBO.me().getPermissionsGroup().getName() == UserRoles.SUPER_ADMINISTRATOR))
+        if ((adminVerify == null) || (adminVerify.validationType() == ValidationType.ADMIN && usersBO.me().getPermissionsGroup().getName() != UserRoles.DEFAULT) ||
+                (adminVerify.validationType() == ValidationType.SUPER_ADMIN && usersBO.me().getPermissionsGroup().getName() == UserRoles.SUPER_ADMINISTRATOR))
             return true;
-        
+
         response.setStatus(403);
         return false;
 

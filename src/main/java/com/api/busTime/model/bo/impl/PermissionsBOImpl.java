@@ -3,15 +3,19 @@ package com.api.busTime.model.bo.impl;
 import com.api.busTime.model.bo.PermissionsBO;
 import com.api.busTime.model.bo.UsersBO;
 import com.api.busTime.model.dao.PermissionsGroupDAO;
+import com.api.busTime.model.dtos.PermissionsGroupDTO;
 import com.api.busTime.model.entities.PermissionsGroup;
 import com.api.busTime.model.entities.User;
 import com.api.busTime.model.entities.UserRoles;
+import com.api.busTime.utils.AdminVerify;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PermissionsBOImpl implements PermissionsBO {
@@ -19,22 +23,29 @@ public class PermissionsBOImpl implements PermissionsBO {
     @Autowired
     private PermissionsGroupDAO permissionsGroupDAO;
 
-    @Autowired
-    private UsersBO userBO;
-
     @Override
-    public ResponseEntity<List<PermissionsGroup>> findAll() {
-        
-        List<PermissionsGroup> permissionsGroups = permissionsGroupDAO.findAll();
+    public ResponseEntity<List<PermissionsGroupDTO>> findAll() {
 
-        return ResponseEntity.ok(permissionsGroups);
+        List<PermissionsGroup> permissionsGroups = permissionsGroupDAO.findAll();
+        List<PermissionsGroupDTO> permissionsGroupDTOS;
+
+        permissionsGroupDTOS = permissionsGroups.stream().map((per) -> {
+            PermissionsGroupDTO permissionsGroupDTO = new PermissionsGroupDTO();
+            BeanUtils.copyProperties(per, permissionsGroupDTO);
+            return permissionsGroupDTO;
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(permissionsGroupDTOS);
     }
 
     @Override
-    public ResponseEntity<PermissionsGroup> findById(int id) {
-        
-        PermissionsGroup permissionsGroup = permissionsGroupDAO.findById(id);
+    public ResponseEntity<PermissionsGroupDTO> findById(int id) {
 
-        return ResponseEntity.ok(permissionsGroup);
+        PermissionsGroup permissionsGroup = permissionsGroupDAO.findById(id);
+        PermissionsGroupDTO permissionsGroupDTO = new PermissionsGroupDTO();
+
+        BeanUtils.copyProperties(permissionsGroup, permissionsGroupDTO);
+
+        return ResponseEntity.ok(permissionsGroupDTO);
     }
 }

@@ -9,23 +9,23 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 public interface UsersBO {
-    User create(CreateUserDTO userDTO);
+    UserDTO create(CreateUserDTO userDTO);
 
-    User findById(Long userId);
+    UserDTO findById(Long userId);
 
-    ResponseEntity<List<User>> findAll();
+    ResponseEntity<List<UserDTO>> findAll();
     
-    ResponseEntity<User> setAdminUser(Long userId,  UpdatePermissionDTO updatePermissionDTO);
+    ResponseEntity<UserDTO> setAdminUser(Long userId,  UpdatePermissionDTO updatePermissionDTO);
 
-    List<Bus> favoriteBus(Long busId, Long userId);
+    ResponseEntity<List<BusDTO>> favoriteBus(Long busId, Long userId);
 
-    List<Bus> desfavoriteBus(Long busId, Long userId);
-    
-    User me();
+    ResponseEntity<List<BusDTO>> desfavoriteBus(Long busId, Long userId);
+
+    UserDTO me();
 
     ResponseEntity<String> delete(Long id);
 
-    ResponseEntity<User> update(Long id, UpdateUserDTO updateUserDTO);
+    ResponseEntity<UserDTO> update(Long id, UpdateUserDTO updateUserDTO);
 
     ResponseEntity<LoginResponse> login(LoginRequest loginRequest, String accessToken, String refreshToken);
 

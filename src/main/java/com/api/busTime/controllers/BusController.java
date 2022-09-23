@@ -1,11 +1,14 @@
 package com.api.busTime.controllers;
 
+import com.api.busTime.model.dtos.BusDTO;
 import com.api.busTime.model.dtos.CreateBusDTO;
 import com.api.busTime.model.dtos.UpdateBusDTO;
 import com.api.busTime.model.entities.Bus;
 import com.api.busTime.model.bo.BusBO;
 import com.api.busTime.model.bo.UsersBO;
 import com.api.busTime.utils.AdminVerify;
+import com.api.busTime.utils.LoggerUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -19,50 +22,53 @@ import java.util.List;
 @RequestMapping("/api/v1/bus")
 public class BusController {
 
+    @Autowired
     private final BusBO busBO;
-    
-    private final UsersBO usersBO;
 
-    public BusController(BusBO busBO, UsersBO usersBO) {
-        this.busBO = busBO; this.usersBO = usersBO;
+
+    public BusController(BusBO busBO) {
+        this.busBO = busBO;
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Bus> getById(@PathVariable Long id){
+    public ResponseEntity<BusDTO> getById(@PathVariable Long id) {
         return this.busBO.getById(id);
     }
-    
+
     @GetMapping("/user/{id}")
-    public ResponseEntity<List<Bus>> findBusForUser(@PathVariable Long id){
+    public ResponseEntity<List<BusDTO>> findBusForUser(@PathVariable Long id) {
         return this.busBO.findBusForUser(id);
     }
-    
+
     @GetMapping("/line")
-    public Page<Bus> listForLine(@RequestParam(name = "line") String line, Pageable pageable){
+    public Page<BusDTO> listForLine(@RequestParam(name = "line") String line, Pageable pageable) {
         return this.busBO.listForLine(line, pageable);
     }
 
     @AdminVerify
     @PostMapping
-    public ResponseEntity<Bus> create(@RequestBody @Validated CreateBusDTO createBusDTO) {
+    public ResponseEntity<BusDTO> create(@RequestBody @Validated CreateBusDTO createBusDTO) {
+
+//        loggerUtil.registerLogger("/api/v1/bus", "criar ônibus", "com o formulário:" + createBusDTO.toString());
+
         return this.busBO.create(createBusDTO);
     }
 
     @AdminVerify
     @PutMapping("/{id}")
-    public ResponseEntity<Bus> update(@PathVariable Long id, @RequestBody @Validated UpdateBusDTO updateBusDTO) {
+    public ResponseEntity<BusDTO> update(@PathVariable Long id, @RequestBody @Validated UpdateBusDTO updateBusDTO) {
         return this.busBO.update(id, updateBusDTO);
     }
 
     @AdminVerify
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id){
+    public ResponseEntity<String> delete(@PathVariable Long id) {
         return this.busBO.delete(id);
     }
-    
+
     @GetMapping
-    public Page<Bus> listAll(Pageable pageable){
+    public Page<BusDTO> listAll(Pageable pageable) {
         return this.busBO.listAll(pageable);
     }
-    
+
 }

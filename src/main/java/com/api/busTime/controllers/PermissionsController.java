@@ -1,6 +1,7 @@
 package com.api.busTime.controllers;
 
 import com.api.busTime.model.bo.impl.PermissionsBOImpl;
+import com.api.busTime.model.dtos.PermissionsGroupDTO;
 import com.api.busTime.model.entities.PermissionsGroup;
 import com.api.busTime.utils.AdminVerify;
 import com.api.busTime.utils.ValidationType;
@@ -20,13 +21,13 @@ public class PermissionsController {
 
     @AdminVerify(validationType = ValidationType.SUPER_ADMIN)
     @GetMapping("")
-    public ResponseEntity<List<PermissionsGroup>> findAll(){
+    public ResponseEntity<List<PermissionsGroupDTO>> findAll(){
       return permissionsBOImpl.findAll();
     };
 
     @AdminVerify(validationType = ValidationType.SUPER_ADMIN)
     @GetMapping("/{id}")
-    public ResponseEntity<PermissionsGroup> findById(@PathVariable int id){
+    public ResponseEntity<PermissionsGroupDTO> findById(@PathVariable int id){
         return permissionsBOImpl.findById(id);
     };
 }

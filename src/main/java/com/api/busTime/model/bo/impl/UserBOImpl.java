@@ -1,17 +1,23 @@
 package com.api.busTime.model.bo.impl;
 
-import com.api.busTime.model.dao.BusDAO;
-import com.api.busTime.model.dao.PermissionsGroupDAO;
-import com.api.busTime.model.dtos.*;
 import com.api.busTime.exceptions.EntityExistsException;
 import com.api.busTime.exceptions.ResourceNotFoundException;
-import com.api.busTime.model.entities.*;
-import com.api.busTime.model.dao.UserDAO;
 import com.api.busTime.model.bo.TokenProvider;
 import com.api.busTime.model.bo.UsersBO;
+import com.api.busTime.model.dao.BusDAO;
+import com.api.busTime.model.dao.PermissionsGroupDAO;
+import com.api.busTime.model.dao.UserDAO;
+import com.api.busTime.model.dtos.*;
+import com.api.busTime.model.entities.Bus;
+import com.api.busTime.model.entities.PermissionsGroup;
+import com.api.busTime.model.entities.User;
+import com.api.busTime.model.entities.UserRoles;
 import com.api.busTime.utils.CookieUtil;
+import com.api.busTime.utils.LoggerUtil;
+import com.api.busTime.utils.RequisitionStatus;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,8 +27,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class UserBOImpl implements UsersBO {
@@ -42,14 +48,21 @@ public class UserBOImpl implements UsersBO {
     @Autowired
     private CookieUtil cookieUtil;
 
+    @Autowired
+    private LoggerUtil loggerUtil;
+
 
     public UserBOImpl(UserDAO userDAO) {
         this.userDAO = userDAO;
     }
 
     //Método que procura usuário pelo email
-    private User findByEmail(String email) {
-        return userDAO.findUserByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+    private UserDTO findByEmail(String email) {
+        User user = userDAO.findUserByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
+        UserDTO userReturn = new UserDTO();
+        BeanUtils.copyProperties(user, userReturn);
+
+        return userReturn;
     }
 
     //Método que adiciona o token de acesso
@@ -69,7 +82,7 @@ public class UserBOImpl implements UsersBO {
 
     //Método que irá criar o usuário
     @Override
-    public User create(CreateUserDTO userDTO) {
+    public UserDTO create(CreateUserDTO userDTO) {
         //Verificação se existe algum usuário com o email cadastrado
         Optional<User> userOptional = this.userDAO.findUserByEmail(userDTO.getEmail());
         Optional<User> userOptionalCpf = this.userDAO.findUserByCpf(userDTO.getCpf());
@@ -79,6 +92,7 @@ public class UserBOImpl implements UsersBO {
         if (userOptionalCpf.isPresent()) throw new EntityExistsException("Usuário com cpf ja cadsatrado");
 
         User user = new User();
+        UserDTO userReturn = new UserDTO();
 
         //Colocando os valores de userDTO em user
         BeanUtils.copyProperties(userDTO, user);
@@ -92,104 +106,153 @@ public class UserBOImpl implements UsersBO {
         user.setPermissionsGroup(this.permissionsGroupDAO.findByName(UserRoles.DEFAULT));
 
         //Criando usuário
-        return this.userDAO.save(user);
+        BeanUtils.copyProperties(this.userDAO.save(user), userReturn);
+
+        return userReturn;
     }
 
     //Método que retorna todos os usuário
     @Override
-    public ResponseEntity<List<User>> findAll() {
+    public ResponseEntity<List<UserDTO>> findAll() {
         List<User> allUsers;
+        List<UserDTO> allUsersReturn;
         allUsers = userDAO.findAll();
-        return ResponseEntity.ok(allUsers);
+
+        allUsersReturn = allUsers.stream().map((user) -> {
+            UserDTO newUser = new UserDTO();
+            BeanUtils.copyProperties(user, newUser);
+
+            return newUser;
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(allUsersReturn);
     }
 
     //Método que atualiza o atributo isAdmin de um usuario
     @Override
-    public ResponseEntity<User> setAdminUser(Long userId, UpdatePermissionDTO updatePermissionDTO) {
+    public ResponseEntity<UserDTO> setAdminUser(Long userId, UpdatePermissionDTO updatePermissionDTO) {
         User user = userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
-
+        UserDTO userReturn = new UserDTO();
 
         PermissionsGroup permissionsGroup = this.permissionsGroupDAO.findByName(updatePermissionDTO.getPermissionGroup());
 
         if (permissionsGroup == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         user.setPermissionsGroup(permissionsGroup);
 
-        userDAO.save(user);
+        BeanUtils.copyProperties(userDAO.save(user), userReturn);
 
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(userReturn);
 
 
     }
 
     //Método que favorita um onibus
     @Override
-    public List<Bus> favoriteBus(Long busId, Long userId) {
+    public ResponseEntity<List<BusDTO>> favoriteBus(Long busId, Long userId) {
+        UserDTO currenUser = me();
+        if (!Objects.equals(currenUser.getId(), userId))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
         User user = userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+
         Bus bus = busDAO.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
         List<Bus> busList = user.getFavoriteBus();
+        List<BusDTO> busDTOS;
+        
+        if (busList.contains(bus)) return ResponseEntity.status(HttpStatus.ACCEPTED).build();
         busList.add(bus);
+
         user.setFavoriteBus(busList);
         userDAO.save(user);
+        
+        busDTOS = user.getFavoriteBus().stream().map((favoriteBus) -> {
+            BusDTO busDTO = new BusDTO();
+            BeanUtils.copyProperties(favoriteBus, busDTO);
 
-        return user.getFavoriteBus();
+            return busDTO;
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(busDTOS);
     }
 
     //Método que desfavorita um onibus
     @Override
-    public List<Bus> desfavoriteBus(Long busId, Long userId) {
+    public ResponseEntity<List<BusDTO>> desfavoriteBus(Long busId, Long userId) {
+        UserDTO currenUser = me();
+        if (!Objects.equals(currenUser.getId(), userId))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
         User user = userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
         Bus bus = busDAO.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
         List<Bus> busList = user.getFavoriteBus();
+        List<BusDTO> busDTOS;
+        
+        if (!busList.contains(bus)) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
         busList.remove(bus);
         user.setFavoriteBus(busList);
         userDAO.save(user);
 
-        return user.getFavoriteBus();
+        busDTOS = user.getFavoriteBus().stream().map((favoriteBus) -> {
+            BusDTO busDTO = new BusDTO();
+            BeanUtils.copyProperties(favoriteBus, busDTO);
+
+            return busDTO;
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(busDTOS);
     }
 
     //Método que irá logar o usuário
     @Override
     public ResponseEntity<LoginResponse> login(LoginRequest loginRequest, String accessToken, String refreshToken) {
+        UserDTO user;
+        try {
+            String email = loginRequest.getEmail();
+            user = this.findByEmail(email);
+            Boolean accessTokenValid = tokenProvider.validateToken(accessToken);
+            Boolean refreshTokenValid = tokenProvider.validateToken(refreshToken);
 
-        String email = loginRequest.getEmail();
-        User user = this.findByEmail(email);
-        Boolean accessTokenValid = tokenProvider.validateToken(accessToken);
-        Boolean refreshTokenValid = tokenProvider.validateToken(refreshToken);
+            HttpHeaders responseHeaders = new HttpHeaders();
+            Token newAccessToken;
+            Token newRefreshToken;
 
-        HttpHeaders responseHeaders = new HttpHeaders();
-        Token newAccessToken;
-        Token newRefreshToken;
+            //Validações se existe algum token, caso não irá criar para o usuário
+            if (!accessTokenValid && !refreshTokenValid) {
+                newAccessToken = tokenProvider.generateAccessToken(user.getEmail());
+                newRefreshToken = tokenProvider.generateRefreshToken(user.getEmail());
+                addAccessTokenCookie(responseHeaders, newAccessToken);
+                addRefreshTokenCookie(responseHeaders, newRefreshToken);
+            }
 
-        //Validações se existe algum token, caso não irá criar para o usuário
-        if (!accessTokenValid && !refreshTokenValid) {
-            newAccessToken = tokenProvider.generateAccessToken(user.getEmail());
-            newRefreshToken = tokenProvider.generateRefreshToken(user.getEmail());
-            addAccessTokenCookie(responseHeaders, newAccessToken);
-            addRefreshTokenCookie(responseHeaders, newRefreshToken);
+            //Validações se existe algum token, caso não irá criar para o usuário
+            if (!accessTokenValid && refreshTokenValid) {
+                newAccessToken = tokenProvider.generateAccessToken(user.getEmail());
+                addAccessTokenCookie(responseHeaders, newAccessToken);
+            }
+
+            //Adiciona/cria os tokens
+            if (accessTokenValid && refreshTokenValid) {
+                newAccessToken = tokenProvider.generateAccessToken(user.getEmail());
+                newRefreshToken = tokenProvider.generateRefreshToken(user.getEmail());
+                addAccessTokenCookie(responseHeaders, newAccessToken);
+                addRefreshTokenCookie(responseHeaders, newRefreshToken);
+            }
+
+            LoginResponse loginResponse = new LoginResponse(LoginResponse.SuccessFailure.SUCCESS, "Autenticação realizada com sucesso. " +
+                    "Tokens criados no cookie.");
+            loggerUtil.registerLogger("POST", "/api/v1/auth/login", RequisitionStatus.SUCCESS, "realizou login", "com o seguinte formulário:" + loginRequest.toString());
+
+            return ResponseEntity.ok().headers(responseHeaders).body(loginResponse);
+        } catch (NoSuchElementException elementException) {
+            loggerUtil.registerLogger("POST", "/api/v1/auth/login", RequisitionStatus.FAILURE, "tentou realizar login", "com o seguinte formulário:" + loginRequest.toString());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-
-        //Validações se existe algum token, caso não irá criar para o usuário
-        if (!accessTokenValid && refreshTokenValid) {
-            newAccessToken = tokenProvider.generateAccessToken(user.getEmail());
-            addAccessTokenCookie(responseHeaders, newAccessToken);
-        }
-
-        //Adiciona/cria os tokens
-        if (accessTokenValid && refreshTokenValid) {
-            newAccessToken = tokenProvider.generateAccessToken(user.getEmail());
-            newRefreshToken = tokenProvider.generateRefreshToken(user.getEmail());
-            addAccessTokenCookie(responseHeaders, newAccessToken);
-            addRefreshTokenCookie(responseHeaders, newRefreshToken);
-        }
-
-        LoginResponse loginResponse = new LoginResponse(LoginResponse.SuccessFailure.SUCCESS, "Autenticação realizada com sucesso. " +
-                "Tokens criados no cookie.");
-        return ResponseEntity.ok().headers(responseHeaders).body(loginResponse);
     }
 
     //Método que retorna os dados do usuário
     @Override
-    public User me() {
+    public UserDTO me() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         return this.findByEmail(customUserDetails.getUsername());
@@ -218,24 +281,31 @@ public class UserBOImpl implements UsersBO {
 
     //Método que irá pegar os dados de um usuário pelo id
     @Override
-    public User findById(Long userId) {
+    public UserDTO findById(Long userId) {
         //Realiza uma busca do usuário com o id recebido
-        return this.userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+        User user = this.userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+        UserDTO userReturn = new UserDTO();
+        BeanUtils.copyProperties(user, userReturn);
+
+        return userReturn;
     }
 
     //Método que irá fazer o update do usuário
     @Override
-    public ResponseEntity<User> update(Long userId, UpdateUserDTO updateUserDTO) {
+    public ResponseEntity<UserDTO> update(Long userId, UpdateUserDTO updateUserDTO) {
         //Verificando se existe algum usuário com esse id
-        User currentUser = me();
+        UserDTO currentUser = me();
         User user = this.userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+        UserDTO userReturn = new UserDTO();
 
         if (!currentUser.getId().equals(userId)) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         //Colocando os valores de updateUserDTO em user
         BeanUtils.copyProperties(updateUserDTO, user);
 
-        return ResponseEntity.ok(this.userDAO.save(user));
+        BeanUtils.copyProperties(this.userDAO.save(user), userReturn);
+
+        return ResponseEntity.ok(userReturn);
     }
 
     //Método que irá deletar o usuário

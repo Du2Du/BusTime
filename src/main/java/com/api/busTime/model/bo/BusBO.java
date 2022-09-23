@@ -1,5 +1,6 @@
 package com.api.busTime.model.bo;
 
+import com.api.busTime.model.dtos.BusDTO;
 import com.api.busTime.model.dtos.CreateBusDTO;
 import com.api.busTime.model.dtos.UpdateBusDTO;
 import com.api.busTime.model.entities.Bus;
@@ -11,17 +12,17 @@ import java.util.List;
 
 public interface BusBO {
     
-    ResponseEntity<Bus> getById(Long busId);
+    ResponseEntity<BusDTO> getById(Long busId);
 
-    ResponseEntity<Bus> create(CreateBusDTO createBusDTO);
+    ResponseEntity<BusDTO> create(CreateBusDTO createBusDTO);
 
-    ResponseEntity<Bus> update(Long busId, UpdateBusDTO updateBusDTO);
+    ResponseEntity<BusDTO> update(Long busId, UpdateBusDTO updateBusDTO);
 
-    ResponseEntity<List<Bus>> findBusForUser(Long userId);
+    ResponseEntity<List<BusDTO>> findBusForUser(Long userId);
             
-    Page<Bus> listAll(Pageable pageable);
+    Page<BusDTO> listAll(Pageable pageable);
 
-    Page<Bus> listForLine(String line, Pageable pageable);
+    Page<BusDTO> listForLine(String line, Pageable pageable);
 
     ResponseEntity<String> delete(Long busId);
 

@@ -1,5 +1,6 @@
 package com.api.busTime.model.dao;
 
+import com.api.busTime.model.dtos.UserDTO;
 import com.api.busTime.model.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
