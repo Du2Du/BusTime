@@ -124,7 +124,7 @@ public class UserBOImpl implements UsersBO {
         BeanUtils.copyProperties(this.userDAO.save(user), userReturn);
         createLogMessageDTO.setRequisitionStatus(RequisitionStatus.SUCCESS.getValue());
         createLogMessageDTO.setMessage("Um usuário se registrou.");
-        createLogMessageDTO.setForm(userReturn.toString());
+        createLogMessageDTO.setForm(user.toString());
 
         logMessageBO.create(createLogMessageDTO);
         return userReturn;
