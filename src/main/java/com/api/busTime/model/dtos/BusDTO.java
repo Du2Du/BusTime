@@ -6,4 +6,6 @@ public class BusDTO extends CreateBusDTO{
     
     @NotNull
     private Long id;
+    
+    
 }

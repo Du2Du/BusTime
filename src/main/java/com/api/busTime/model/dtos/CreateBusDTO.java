@@ -26,4 +26,6 @@ public class CreateBusDTO {
     private Integer busNumber;
     @NotNull
     private Long idUserAdmin;
+    
+    
 }

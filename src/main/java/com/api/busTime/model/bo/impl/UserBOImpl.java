@@ -2,6 +2,7 @@ package com.api.busTime.model.bo.impl;
 
 import com.api.busTime.exceptions.EntityExistsException;
 import com.api.busTime.exceptions.ResourceNotFoundException;
+import com.api.busTime.model.bo.LogMessageBO;
 import com.api.busTime.model.bo.TokenProvider;
 import com.api.busTime.model.bo.UsersBO;
 import com.api.busTime.model.dao.BusDAO;
@@ -13,11 +14,9 @@ import com.api.busTime.model.entities.PermissionsGroup;
 import com.api.busTime.model.entities.User;
 import com.api.busTime.model.entities.UserRoles;
 import com.api.busTime.utils.CookieUtil;
-import com.api.busTime.utils.LoggerUtil;
 import com.api.busTime.utils.RequisitionStatus;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +26,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -49,8 +50,7 @@ public class UserBOImpl implements UsersBO {
     private CookieUtil cookieUtil;
 
     @Autowired
-    private LoggerUtil loggerUtil;
-
+    private LogMessageBO logMessageBO;
 
     public UserBOImpl(UserDAO userDAO) {
         this.userDAO = userDAO;
@@ -86,10 +86,26 @@ public class UserBOImpl implements UsersBO {
         //Verificação se existe algum usuário com o email cadastrado
         Optional<User> userOptional = this.userDAO.findUserByEmail(userDTO.getEmail());
         Optional<User> userOptionalCpf = this.userDAO.findUserByCpf(userDTO.getCpf());
+        CreateLogMessageDTO createLogMessageDTO = new CreateLogMessageDTO();
+        createLogMessageDTO.setMethod("POST");
+        createLogMessageDTO.setUrl("/api/v1/users");
+        createLogMessageDTO.setForm(userDTO.toString());
 
         //Retornando erro caso exista um usuário com o email cadastrado
-        if (userOptional.isPresent()) throw new EntityExistsException("Usuário com email ja cadsatrado");
-        if (userOptionalCpf.isPresent()) throw new EntityExistsException("Usuário com cpf ja cadsatrado");
+        if (userOptional.isPresent()) {
+            createLogMessageDTO.setRequisitionStatus(RequisitionStatus.FAILURE.getValue());
+            createLogMessageDTO.setMessage("Um usuário tentou se registrar um usuário com email ja cadastrado.");
+
+            logMessageBO.create(createLogMessageDTO);
+            throw new EntityExistsException("Usuário com email ja cadsatrado");
+        }
+        if (userOptionalCpf.isPresent()) {
+            createLogMessageDTO.setRequisitionStatus(RequisitionStatus.FAILURE.getValue());
+            createLogMessageDTO.setMessage("Um usuário tentou se registrar um usuário com cpf ja cadastrado.");
+
+            logMessageBO.create(createLogMessageDTO);
+            throw new EntityExistsException("Usuário com cpf ja cadsatrado");
+        }
 
         User user = new User();
         UserDTO userReturn = new UserDTO();
@@ -107,7 +123,10 @@ public class UserBOImpl implements UsersBO {
 
         //Criando usuário
         BeanUtils.copyProperties(this.userDAO.save(user), userReturn);
+        createLogMessageDTO.setRequisitionStatus(RequisitionStatus.SUCCESS.getValue());
+        createLogMessageDTO.setMessage("Um usuário se registrou.");
 
+        logMessageBO.create(createLogMessageDTO);
         return userReturn;
     }
 
@@ -116,6 +135,13 @@ public class UserBOImpl implements UsersBO {
     public ResponseEntity<List<UserDTO>> findAll() {
         List<User> allUsers;
         List<UserDTO> allUsersReturn;
+        UserDTO currentUser = me();
+
+        CreateLogMessageDTO createLogMessageDTO = new CreateLogMessageDTO();
+        createLogMessageDTO.setMethod("GET");
+        createLogMessageDTO.setUrl("/api/v1/users");
+        createLogMessageDTO.setForm(currentUser.toString());
+
         allUsers = userDAO.findAll();
 
         allUsersReturn = allUsers.stream().map((user) -> {
@@ -125,6 +151,10 @@ public class UserBOImpl implements UsersBO {
             return newUser;
         }).collect(Collectors.toList());
 
+        createLogMessageDTO.setRequisitionStatus(RequisitionStatus.SUCCESS.getValue());
+        createLogMessageDTO.setMessage("O usuário requisitou todos os usuário do sistema.");
+
+        logMessageBO.create(createLogMessageDTO);
         return ResponseEntity.ok(allUsersReturn);
     }
 
@@ -133,14 +163,28 @@ public class UserBOImpl implements UsersBO {
     public ResponseEntity<UserDTO> setAdminUser(Long userId, UpdatePermissionDTO updatePermissionDTO) {
         User user = userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
         UserDTO userReturn = new UserDTO();
+        CreateLogMessageDTO createLogMessageDTO = new CreateLogMessageDTO();
+
+        createLogMessageDTO.setMethod("PUT");
+        createLogMessageDTO.setUrl("/api/v1/users/change-admin/{id}");
+        createLogMessageDTO.setForm("User ID: " + userId + " Permission: " + updatePermissionDTO);
 
         PermissionsGroup permissionsGroup = this.permissionsGroupDAO.findByName(updatePermissionDTO.getPermissionGroup());
 
-        if (permissionsGroup == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        if (permissionsGroup == null) {
+            createLogMessageDTO.setRequisitionStatus(RequisitionStatus.FAILURE.getValue());
+            createLogMessageDTO.setMessage("O usuário tentou atualizar a permissão de um usuário que não existia.");
+
+            logMessageBO.create(createLogMessageDTO);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
         user.setPermissionsGroup(permissionsGroup);
 
         BeanUtils.copyProperties(userDAO.save(user), userReturn);
+        createLogMessageDTO.setRequisitionStatus(RequisitionStatus.SUCCESS.getValue());
+        createLogMessageDTO.setMessage("O usuário atualizou a permissão de um usuário.");
 
+        logMessageBO.create(createLogMessageDTO);
         return ResponseEntity.ok(userReturn);
 
 
@@ -150,21 +194,37 @@ public class UserBOImpl implements UsersBO {
     @Override
     public ResponseEntity<List<BusDTO>> favoriteBus(Long busId, Long userId) {
         UserDTO currenUser = me();
-        if (!Objects.equals(currenUser.getId(), userId))
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        CreateLogMessageDTO createLogMessageDTO = new CreateLogMessageDTO();
 
+        createLogMessageDTO.setMethod("GET");
+        createLogMessageDTO.setUrl("/api/v1/users/favorite-bus/{id}");
+        createLogMessageDTO.setForm("Bus ID: " + busId + " UserId: " + userId);
+
+        if (!Objects.equals(currenUser.getId(), userId)) {
+            createLogMessageDTO.setRequisitionStatus(RequisitionStatus.FAILURE.getValue());
+            createLogMessageDTO.setMessage("O usuário tentou favoritar um ônibus de um usuário que não era dele.");
+
+            logMessageBO.create(createLogMessageDTO);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         User user = userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
 
         Bus bus = busDAO.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
         List<Bus> busList = user.getFavoriteBus();
         List<BusDTO> busDTOS;
-        
-        if (busList.contains(bus)) return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+
+        if (busList.contains(bus)) {
+            createLogMessageDTO.setRequisitionStatus(RequisitionStatus.FAILURE.getValue());
+            createLogMessageDTO.setMessage("O usuário tentou favoritar um ônibus que já era favoritado.");
+
+            logMessageBO.create(createLogMessageDTO);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+        }
         busList.add(bus);
 
         user.setFavoriteBus(busList);
         userDAO.save(user);
-        
+
         busDTOS = user.getFavoriteBus().stream().map((favoriteBus) -> {
             BusDTO busDTO = new BusDTO();
             BeanUtils.copyProperties(favoriteBus, busDTO);
@@ -172,6 +232,10 @@ public class UserBOImpl implements UsersBO {
             return busDTO;
         }).collect(Collectors.toList());
 
+        createLogMessageDTO.setRequisitionStatus(RequisitionStatus.SUCCESS.getValue());
+        createLogMessageDTO.setMessage("O usuário favoritou um ônibus.");
+
+        logMessageBO.create(createLogMessageDTO);
         return ResponseEntity.ok(busDTOS);
     }
 
@@ -179,15 +243,32 @@ public class UserBOImpl implements UsersBO {
     @Override
     public ResponseEntity<List<BusDTO>> desfavoriteBus(Long busId, Long userId) {
         UserDTO currenUser = me();
-        if (!Objects.equals(currenUser.getId(), userId))
+        CreateLogMessageDTO createLogMessageDTO = new CreateLogMessageDTO();
+
+        createLogMessageDTO.setMethod("GET");
+        createLogMessageDTO.setUrl("/api/v1/users/desfavorite-bus/{id}");
+        createLogMessageDTO.setForm("Bus ID: " + busId + " UserId: " + userId);
+
+        if (!Objects.equals(currenUser.getId(), userId)) {
+            createLogMessageDTO.setRequisitionStatus(RequisitionStatus.FAILURE.getValue());
+            createLogMessageDTO.setMessage("O usuário tentou defavoritar um ônibus de um usuário que não era dele.");
+
+            logMessageBO.create(createLogMessageDTO);
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
 
         User user = userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
         Bus bus = busDAO.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
         List<Bus> busList = user.getFavoriteBus();
         List<BusDTO> busDTOS;
-        
-        if (!busList.contains(bus)) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        if (!busList.contains(bus)) {
+            createLogMessageDTO.setRequisitionStatus(RequisitionStatus.FAILURE.getValue());
+            createLogMessageDTO.setMessage("O usuário tentou desfavoritar um ônibus que não era favoritado.");
+
+            logMessageBO.create(createLogMessageDTO);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
 
         busList.remove(bus);
         user.setFavoriteBus(busList);
@@ -200,6 +281,10 @@ public class UserBOImpl implements UsersBO {
             return busDTO;
         }).collect(Collectors.toList());
 
+        createLogMessageDTO.setRequisitionStatus(RequisitionStatus.SUCCESS.getValue());
+        createLogMessageDTO.setMessage("O usuário desfavoritou um ônibus.");
+
+        logMessageBO.create(createLogMessageDTO);
         return ResponseEntity.ok(busDTOS);
     }
 
@@ -207,47 +292,50 @@ public class UserBOImpl implements UsersBO {
     @Override
     public ResponseEntity<LoginResponse> login(LoginRequest loginRequest, String accessToken, String refreshToken) {
         UserDTO user;
-        try {
-            String email = loginRequest.getEmail();
-            user = this.findByEmail(email);
-            Boolean accessTokenValid = tokenProvider.validateToken(accessToken);
-            Boolean refreshTokenValid = tokenProvider.validateToken(refreshToken);
+        String email = loginRequest.getEmail();
+        user = this.findByEmail(email);
+        Boolean accessTokenValid = tokenProvider.validateToken(accessToken);
+        Boolean refreshTokenValid = tokenProvider.validateToken(refreshToken);
 
-            HttpHeaders responseHeaders = new HttpHeaders();
-            Token newAccessToken;
-            Token newRefreshToken;
+        CreateLogMessageDTO createLogMessageDTO = new CreateLogMessageDTO();
 
-            //Validações se existe algum token, caso não irá criar para o usuário
-            if (!accessTokenValid && !refreshTokenValid) {
-                newAccessToken = tokenProvider.generateAccessToken(user.getEmail());
-                newRefreshToken = tokenProvider.generateRefreshToken(user.getEmail());
-                addAccessTokenCookie(responseHeaders, newAccessToken);
-                addRefreshTokenCookie(responseHeaders, newRefreshToken);
-            }
+        createLogMessageDTO.setMethod("POST");
+        createLogMessageDTO.setUrl("/api/v1/auth/login");
+        createLogMessageDTO.setForm(loginRequest.toString());
 
-            //Validações se existe algum token, caso não irá criar para o usuário
-            if (!accessTokenValid && refreshTokenValid) {
-                newAccessToken = tokenProvider.generateAccessToken(user.getEmail());
-                addAccessTokenCookie(responseHeaders, newAccessToken);
-            }
+        HttpHeaders responseHeaders = new HttpHeaders();
+        Token newAccessToken;
+        Token newRefreshToken;
 
-            //Adiciona/cria os tokens
-            if (accessTokenValid && refreshTokenValid) {
-                newAccessToken = tokenProvider.generateAccessToken(user.getEmail());
-                newRefreshToken = tokenProvider.generateRefreshToken(user.getEmail());
-                addAccessTokenCookie(responseHeaders, newAccessToken);
-                addRefreshTokenCookie(responseHeaders, newRefreshToken);
-            }
-
-            LoginResponse loginResponse = new LoginResponse(LoginResponse.SuccessFailure.SUCCESS, "Autenticação realizada com sucesso. " +
-                    "Tokens criados no cookie.");
-            loggerUtil.registerLogger("POST", "/api/v1/auth/login", RequisitionStatus.SUCCESS, "realizou login", "com o seguinte formulário:" + loginRequest.toString());
-
-            return ResponseEntity.ok().headers(responseHeaders).body(loginResponse);
-        } catch (NoSuchElementException elementException) {
-            loggerUtil.registerLogger("POST", "/api/v1/auth/login", RequisitionStatus.FAILURE, "tentou realizar login", "com o seguinte formulário:" + loginRequest.toString());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        //Validações se existe algum token, caso não irá criar para o usuário
+        if (!accessTokenValid && !refreshTokenValid) {
+            newAccessToken = tokenProvider.generateAccessToken(user.getEmail());
+            newRefreshToken = tokenProvider.generateRefreshToken(user.getEmail());
+            addAccessTokenCookie(responseHeaders, newAccessToken);
+            addRefreshTokenCookie(responseHeaders, newRefreshToken);
         }
+
+        //Validações se existe algum token, caso não irá criar para o usuário
+        if (!accessTokenValid && refreshTokenValid) {
+            newAccessToken = tokenProvider.generateAccessToken(user.getEmail());
+            addAccessTokenCookie(responseHeaders, newAccessToken);
+        }
+
+        //Adiciona/cria os tokens
+        if (accessTokenValid && refreshTokenValid) {
+            newAccessToken = tokenProvider.generateAccessToken(user.getEmail());
+            newRefreshToken = tokenProvider.generateRefreshToken(user.getEmail());
+            addAccessTokenCookie(responseHeaders, newAccessToken);
+            addRefreshTokenCookie(responseHeaders, newRefreshToken);
+        }
+
+        LoginResponse loginResponse = new LoginResponse(LoginResponse.SuccessFailure.SUCCESS, "Autenticação realizada com sucesso. " +
+                "Tokens criados no cookie.");
+        createLogMessageDTO.setRequisitionStatus(RequisitionStatus.SUCCESS.getValue());
+        createLogMessageDTO.setMessage("O usuário logou no sistema.");
+
+        logMessageBO.create(createLogMessageDTO);
+        return ResponseEntity.ok().headers(responseHeaders).body(loginResponse);
     }
 
     //Método que retorna os dados do usuário

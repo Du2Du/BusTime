@@ -3,11 +3,8 @@ package com.api.busTime.controllers;
 import com.api.busTime.model.dtos.BusDTO;
 import com.api.busTime.model.dtos.CreateBusDTO;
 import com.api.busTime.model.dtos.UpdateBusDTO;
-import com.api.busTime.model.entities.Bus;
 import com.api.busTime.model.bo.BusBO;
-import com.api.busTime.model.bo.UsersBO;
 import com.api.busTime.utils.AdminVerify;
-import com.api.busTime.utils.LoggerUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -48,9 +45,7 @@ public class BusController {
     @AdminVerify
     @PostMapping
     public ResponseEntity<BusDTO> create(@RequestBody @Validated CreateBusDTO createBusDTO) {
-
-//        loggerUtil.registerLogger("/api/v1/bus", "criar ônibus", "com o formulário:" + createBusDTO.toString());
-
+        
         return this.busBO.create(createBusDTO);
     }
 
