@@ -89,7 +89,6 @@ public class UserBOImpl implements UsersBO {
         CreateLogMessageDTO createLogMessageDTO = new CreateLogMessageDTO();
         createLogMessageDTO.setMethod("POST");
         createLogMessageDTO.setUrl("/api/v1/users");
-        createLogMessageDTO.setForm(userDTO.toString());
 
         //Retornando erro caso exista um usuário com o email cadastrado
         if (userOptional.isPresent()) {
@@ -125,6 +124,7 @@ public class UserBOImpl implements UsersBO {
         BeanUtils.copyProperties(this.userDAO.save(user), userReturn);
         createLogMessageDTO.setRequisitionStatus(RequisitionStatus.SUCCESS.getValue());
         createLogMessageDTO.setMessage("Um usuário se registrou.");
+        createLogMessageDTO.setForm(userReturn.toString());
 
         logMessageBO.create(createLogMessageDTO);
         return userReturn;
@@ -297,11 +297,18 @@ public class UserBOImpl implements UsersBO {
         Boolean accessTokenValid = tokenProvider.validateToken(accessToken);
         Boolean refreshTokenValid = tokenProvider.validateToken(refreshToken);
 
-        CreateLogMessageDTO createLogMessageDTO = new CreateLogMessageDTO();
+        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(10, new SecureRandom());
+        String encodedPassword = bCryptPasswordEncoder.encode(loginRequest.getPassword());
 
+        LoginRequest loginRequestLog = new LoginRequest();
+        CreateLogMessageDTO createLogMessageDTO = new CreateLogMessageDTO();
+        
+        BeanUtils.copyProperties(loginRequest, loginRequestLog);
+        loginRequestLog.setPassword(encodedPassword);
+        
         createLogMessageDTO.setMethod("POST");
         createLogMessageDTO.setUrl("/api/v1/auth/login");
-        createLogMessageDTO.setForm(loginRequest.toString());
+        createLogMessageDTO.setForm(loginRequestLog.toString());
 
         HttpHeaders responseHeaders = new HttpHeaders();
         Token newAccessToken;
