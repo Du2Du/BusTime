@@ -25,32 +25,18 @@ public class PermissionsBOImpl implements PermissionsBO {
 
     @Autowired
     private PermissionsGroupDAO permissionsGroupDAO;
-
-    @Autowired
-    private LogMessageBO logMessageBO;
-    
-    @Autowired
-    private UserBOImpl userBO;
     
     @Override
     public ResponseEntity<List<PermissionsGroupDTO>> findAll() {
 
         List<PermissionsGroup> permissionsGroups = permissionsGroupDAO.findAll();
         List<PermissionsGroupDTO> permissionsGroupDTOS;
-        CreateLogMessageDTO createLogMessageDTO = new CreateLogMessageDTO();
-        createLogMessageDTO.setUrl("/api/v1/permissions");
-        createLogMessageDTO.setRequisitionStatus(RequisitionStatus.SUCCESS.getValue());
-        createLogMessageDTO.setMethod("GET");
-        createLogMessageDTO.setMessage("Usuário requisitou todos os registros de permissão");
-        createLogMessageDTO.setForm(userBO.me().toString());
         
         permissionsGroupDTOS = permissionsGroups.stream().map((per) -> {
             PermissionsGroupDTO permissionsGroupDTO = new PermissionsGroupDTO();
             BeanUtils.copyProperties(per, permissionsGroupDTO);
             return permissionsGroupDTO;
         }).collect(Collectors.toList());
-
-        logMessageBO.create(createLogMessageDTO);
         
         return ResponseEntity.ok(permissionsGroupDTOS);
     }
@@ -60,14 +46,7 @@ public class PermissionsBOImpl implements PermissionsBO {
 
         PermissionsGroup permissionsGroup = permissionsGroupDAO.findById(id);
         PermissionsGroupDTO permissionsGroupDTO = new PermissionsGroupDTO();
-        CreateLogMessageDTO createLogMessageDTO = new CreateLogMessageDTO();
-        createLogMessageDTO.setUrl("/api/v1/permissions/{id}");
-        createLogMessageDTO.setRequisitionStatus(RequisitionStatus.SUCCESS.getValue());
-        createLogMessageDTO.setMethod("GET");
-        createLogMessageDTO.setMessage("Usuário requisitou uma permissão pelo ID");
-        createLogMessageDTO.setForm(userBO.me().toString());
-        logMessageBO.create(createLogMessageDTO);
-
+        
         BeanUtils.copyProperties(permissionsGroup, permissionsGroupDTO);
 
         return ResponseEntity.ok(permissionsGroupDTO);
