@@ -17,9 +17,6 @@ public class UpdateUserDTO {
     @NotBlank
     private String name;
     @NotBlank
-    @CPF
-    private String cpf;
-    @NotBlank
     @Email
     private String email;
     @NotNull
