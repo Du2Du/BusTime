@@ -48,7 +48,9 @@ public class BusBOImpl implements BusBO {
         createLogMessageDTO.setForm(createBusDTO.toString());
         createLogMessageDTO.setMethod("POST");
         createLogMessageDTO.setUrl("/api/v1/bus");
-
+        
+        logMessageBO.create(createLogMessageDTO);
+        
         return ResponseEntity.ok(busReturn);
     }
 
@@ -69,6 +71,8 @@ public class BusBOImpl implements BusBO {
         if (!bus.getIdUserAdmin().equals(user.getId())) {
             createLogMessageDTO.setMessage("Um usuário tentou atualizar um ônibus");
             createLogMessageDTO.setRequisitionStatus(RequisitionStatus.FAILURE.getValue());
+            logMessageBO.create(createLogMessageDTO);
+
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -79,7 +83,7 @@ public class BusBOImpl implements BusBO {
 
         createLogMessageDTO.setMessage("Um usuário atualizou um ônibus");
         createLogMessageDTO.setRequisitionStatus(RequisitionStatus.SUCCESS.getValue());
-
+        logMessageBO.create(createLogMessageDTO);
 
         return ResponseEntity.ok(busReturn);
     }
@@ -100,6 +104,8 @@ public class BusBOImpl implements BusBO {
         if (!bus.getIdUserAdmin().equals(user.getId())) {
             createLogMessageDTO.setMessage("Um usuário tentou deletar um ônibus");
             createLogMessageDTO.setRequisitionStatus(RequisitionStatus.FAILURE.getValue());
+            logMessageBO.create(createLogMessageDTO);
+
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -107,6 +113,7 @@ public class BusBOImpl implements BusBO {
 
         createLogMessageDTO.setMessage("Um usuário deletou um ônibus");
         createLogMessageDTO.setRequisitionStatus(RequisitionStatus.SUCCESS.getValue());
+        logMessageBO.create(createLogMessageDTO);
 
         return ResponseEntity.ok("Ônibus deletado com sucesso");
     }
@@ -122,6 +129,8 @@ public class BusBOImpl implements BusBO {
         Bus bus = this.busDAO.findById(busId).orElseThrow(() -> {
             createLogMessageDTO.setMessage("Um usuário tentou ler um ônibus pelo id");
             createLogMessageDTO.setRequisitionStatus(RequisitionStatus.FAILURE.getValue());
+            logMessageBO.create(createLogMessageDTO);
+
             return new ResourceNotFoundException("Ônibus não encontrado.");
         });
         BusDTO busReturn = new BusDTO();
@@ -129,6 +138,7 @@ public class BusBOImpl implements BusBO {
 
         createLogMessageDTO.setMessage("Um usuário leu um ônibus pelo id");
         createLogMessageDTO.setRequisitionStatus(RequisitionStatus.SUCCESS.getValue());
+        logMessageBO.create(createLogMessageDTO);
 
         return ResponseEntity.ok(busReturn);
     }
@@ -148,6 +158,8 @@ public class BusBOImpl implements BusBO {
         if (!userId.equals(user.getId())) {
             createLogMessageDTO.setMessage("Um usuário tentou achar um ônibus pelo id do usuario");
             createLogMessageDTO.setRequisitionStatus(RequisitionStatus.FAILURE.getValue());
+            logMessageBO.create(createLogMessageDTO);
+
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -160,7 +172,8 @@ public class BusBOImpl implements BusBO {
         
         createLogMessageDTO.setMessage("Um usuário buscou um ônibus pelo id do usuário");
         createLogMessageDTO.setRequisitionStatus(RequisitionStatus.SUCCESS.getValue());
-        
+        logMessageBO.create(createLogMessageDTO);
+
         return ResponseEntity.ok(busReturn);
     }
 
@@ -184,6 +197,7 @@ public class BusBOImpl implements BusBO {
 
         createLogMessageDTO.setMessage("Um usuário buscou um ônibus pela linha dele");
         createLogMessageDTO.setRequisitionStatus(RequisitionStatus.SUCCESS.getValue());
+        logMessageBO.create(createLogMessageDTO);
 
         return busReturn;
     }
@@ -205,6 +219,7 @@ public class BusBOImpl implements BusBO {
         createLogMessageDTO.setForm(user.toString());
         createLogMessageDTO.setMessage("Um usuário buscou todos os ônibus");
         createLogMessageDTO.setRequisitionStatus(RequisitionStatus.SUCCESS.getValue());
+        logMessageBO.create(createLogMessageDTO);
 
         return busReturn;
     }

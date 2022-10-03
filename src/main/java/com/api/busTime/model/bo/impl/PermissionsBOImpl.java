@@ -66,7 +66,8 @@ public class PermissionsBOImpl implements PermissionsBO {
         createLogMessageDTO.setMethod("GET");
         createLogMessageDTO.setMessage("Usuário requisitou uma permissão pelo ID");
         createLogMessageDTO.setForm(userBO.me().toString());
-        
+        logMessageBO.create(createLogMessageDTO);
+
         BeanUtils.copyProperties(permissionsGroup, permissionsGroupDTO);
 
         return ResponseEntity.ok(permissionsGroupDTO);
