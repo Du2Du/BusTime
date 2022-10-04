@@ -10,7 +10,7 @@ public class LogMessageDTO  {
     @NotBlank
     private LocalDateTime time;
     @NotNull
-    private String requisitionStatus;
+    private String urlStatus;
     @NotBlank
     private String method;
     @NotBlank

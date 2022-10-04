@@ -29,7 +29,7 @@ public class Interceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         CreateLogMessageDTO createLogMessageDTO = new CreateLogMessageDTO(request.getMethod(), request.getRequestURI());
         
-        if (!request.getRequestURI().equals("/api/v1/auth/login"))
+        if (request.getHeader("Cookie") != null)
             createLogMessageDTO.setUserForm("Email: "+usersBO.me().getEmail()+"\nPermission: "+usersBO.me().getPermissionsGroup().getName());
         
         final AdminVerify adminVerify = ((HandlerMethod) handler)
@@ -37,13 +37,13 @@ public class Interceptor implements HandlerInterceptor {
 
         if ((adminVerify == null) || (adminVerify.validationType() == ValidationType.ADMIN && usersBO.me().getPermissionsGroup().getName() != UserRoles.DEFAULT) ||
                 (adminVerify.validationType() == ValidationType.SUPER_ADMIN && usersBO.me().getPermissionsGroup().getName() == UserRoles.SUPER_ADMINISTRATOR)) {
-            createLogMessageDTO.setRequisitionStatus(RequisitionStatus.SUCCESS.getValue());
+            createLogMessageDTO.setUrlStatus(RequisitionStatus.SUCCESS.getValue());
             logMessageBO.create(createLogMessageDTO);
             return true;
         }
 
         response.setStatus(403);
-        createLogMessageDTO.setRequisitionStatus(RequisitionStatus.FAILURE.getValue());
+        createLogMessageDTO.setUrlStatus(RequisitionStatus.FAILURE.getValue());
         logMessageBO.create(createLogMessageDTO);
         return false;
 

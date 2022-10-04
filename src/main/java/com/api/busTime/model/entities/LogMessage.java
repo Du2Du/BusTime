@@ -22,7 +22,7 @@ public class LogMessage {
     @Column(nullable = true)
     private String userForm;
     @Column(nullable = false)
-    private String requisitionStatus;
+    private String urlStatus;
     @Column(nullable = false)
     private String url;
 

@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
 public class CreateLogMessageDTO {
     
     @NotNull
-    private String requisitionStatus;
+    private String urlStatus;
     @NotBlank
     private String method;
     @NotBlank
