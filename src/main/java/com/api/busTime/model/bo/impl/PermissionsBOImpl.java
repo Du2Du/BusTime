@@ -1,19 +1,11 @@
 package com.api.busTime.model.bo.impl;
 
-import com.api.busTime.model.bo.LogMessageBO;
 import com.api.busTime.model.bo.PermissionsBO;
-import com.api.busTime.model.bo.UsersBO;
 import com.api.busTime.model.dao.PermissionsGroupDAO;
-import com.api.busTime.model.dtos.CreateLogMessageDTO;
 import com.api.busTime.model.dtos.PermissionsGroupDTO;
 import com.api.busTime.model.entities.PermissionsGroup;
-import com.api.busTime.model.entities.User;
-import com.api.busTime.model.entities.UserRoles;
-import com.api.busTime.utils.AdminVerify;
-import com.api.busTime.utils.RequisitionStatus;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 

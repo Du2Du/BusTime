@@ -2,7 +2,6 @@ package com.api.busTime.model.bo.impl;
 
 import com.api.busTime.exceptions.EntityExistsException;
 import com.api.busTime.exceptions.ResourceNotFoundException;
-import com.api.busTime.model.bo.LogMessageBO;
 import com.api.busTime.model.bo.TokenProvider;
 import com.api.busTime.model.bo.UsersBO;
 import com.api.busTime.model.dao.BusDAO;
@@ -14,7 +13,6 @@ import com.api.busTime.model.entities.PermissionsGroup;
 import com.api.busTime.model.entities.User;
 import com.api.busTime.model.entities.UserRoles;
 import com.api.busTime.utils.CookieUtil;
-import com.api.busTime.utils.RequisitionStatus;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;

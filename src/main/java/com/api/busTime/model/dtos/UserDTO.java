@@ -31,4 +31,5 @@ public class UserDTO {
 
     @NotNull
     private List<Bus> favoriteBus;
+    
 }

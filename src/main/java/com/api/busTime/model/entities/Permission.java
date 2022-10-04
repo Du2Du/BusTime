@@ -7,8 +7,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @Entity
 @Table(name = "permissions")

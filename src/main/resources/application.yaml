@@ -1,6 +1,6 @@
 authentication:
   auth:
-    tokenSecret: myTokenSecret
+    tokenSecret: programacao_web
     tokenExpirationMsec: 3600000 #1 hour
     refreshTokenExpirationMsec: 7776000000 #90 days
     accessTokenCookieName: accessToken

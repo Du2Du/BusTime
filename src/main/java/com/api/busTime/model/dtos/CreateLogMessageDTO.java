@@ -1,21 +1,24 @@
 package com.api.busTime.model.dtos;
 
-import com.api.busTime.utils.RequisitionStatus;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Data
 public class CreateLogMessageDTO {
     
-    @NotBlank
-    private String message;
-    @NotBlank
+    @NotNull
     private String requisitionStatus;
     @NotBlank
     private String method;
     @NotBlank
     private String url;
-    @NotBlank
-    private String form;
+    private String userForm;
+
+    public CreateLogMessageDTO(String method, String url) {
+        this.method = method;
+        this.url = url;
+    }
 }

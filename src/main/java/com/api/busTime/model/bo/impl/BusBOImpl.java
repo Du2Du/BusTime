@@ -2,12 +2,13 @@ package com.api.busTime.model.bo.impl;
 
 import com.api.busTime.exceptions.ResourceNotFoundException;
 import com.api.busTime.model.bo.BusBO;
-import com.api.busTime.model.bo.LogMessageBO;
 import com.api.busTime.model.bo.UsersBO;
 import com.api.busTime.model.dao.BusDAO;
-import com.api.busTime.model.dtos.*;
+import com.api.busTime.model.dtos.BusDTO;
+import com.api.busTime.model.dtos.CreateBusDTO;
+import com.api.busTime.model.dtos.UpdateBusDTO;
+import com.api.busTime.model.dtos.UserDTO;
 import com.api.busTime.model.entities.Bus;
-import com.api.busTime.utils.RequisitionStatus;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -17,7 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
