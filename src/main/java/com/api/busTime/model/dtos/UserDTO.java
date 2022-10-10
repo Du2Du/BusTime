@@ -4,6 +4,8 @@ import com.api.busTime.model.entities.Bus;
 import com.api.busTime.model.entities.PermissionsGroup;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.Email;
@@ -12,7 +14,8 @@ import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
 
-@Data
+@Setter
+@Getter
 public class UserDTO {
     @NotBlank
     private String name;
@@ -31,5 +34,14 @@ public class UserDTO {
 
     @NotNull
     private List<Bus> favoriteBus;
-    
+
+    @Override
+    public String toString() {
+        return "UserDTO{" +
+                "name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                ", id=" + id +
+                ", permissionsGroup=" + permissionsGroup.getName() +
+                '}';
+    }
 }
