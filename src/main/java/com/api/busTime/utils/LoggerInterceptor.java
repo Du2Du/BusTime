@@ -12,6 +12,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+//Esse é um interceptador das view, fiz um separado por que pela minha visão era necessário para não ocorrer erros 
 @Component
 public class LoggerInterceptor implements HandlerInterceptor {
 
