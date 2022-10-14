@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class LogMessageBOImpl implements LogMessageBO {
@@ -42,5 +45,19 @@ public class LogMessageBOImpl implements LogMessageBO {
         BeanUtils.copyProperties(logMessage, logMessageDTO);
 
         return ResponseEntity.ok(logMessageDTO);
+    }
+
+    @Override
+    public ResponseEntity<List<LogMessageDTO>> getAllLogs() {
+        List<LogMessage> logs = logMessageDAO.findAll();
+        List<LogMessageDTO> logsDTO;
+        logsDTO = logs.stream().map((log) -> {
+            LogMessageDTO logDTO = new LogMessageDTO();
+
+            BeanUtils.copyProperties(log, logDTO);
+            return logDTO;
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(logsDTO);
     }
 }
