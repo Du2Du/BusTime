@@ -132,7 +132,7 @@ public class BusBOImpl implements BusBO {
     //Método que lista os onibus paginado
     public Page<BusDTO> listAll(Pageable pageable) {
         Page<BusDTO> busReturn;
-        busReturn = this.busDAO.findAll(pageable).map((page) -> {
+        busReturn = this.busDAO.listForDate(pageable).map((page) -> {
             BusDTO bus = new BusDTO();
             BeanUtils.copyProperties(page, bus);
             return bus;

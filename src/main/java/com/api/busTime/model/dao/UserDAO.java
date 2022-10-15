@@ -2,6 +2,8 @@ package com.api.busTime.model.dao;
 
 import com.api.busTime.model.dtos.UserDTO;
 import com.api.busTime.model.entities.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -15,4 +17,7 @@ public interface UserDAO extends JpaRepository<User, Long> {
     
     @Query("SELECT u FROM User u WHERE u.cpf = ?1")
     Optional<User> findUserByCpf(String cpf);
+    
+    @Query("SELECT u FROM User u ORDER BY u.id ASC")
+    Page<User> listAllForId(Pageable pageable);
 }

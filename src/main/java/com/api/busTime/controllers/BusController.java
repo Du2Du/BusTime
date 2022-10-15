@@ -21,7 +21,7 @@ public class BusController {
 
     @Autowired
     private final BusBO busBO;
-
+    
 
     public BusController(BusBO busBO) {
         this.busBO = busBO;

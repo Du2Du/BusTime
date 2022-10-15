@@ -6,6 +6,8 @@ import com.api.busTime.model.entities.User;
 import com.api.busTime.model.bo.UsersBO;
 import com.api.busTime.utils.AdminVerify;
 import com.api.busTime.utils.ValidationType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -25,8 +27,8 @@ public class UserController {
 
     @AdminVerify(validationType = ValidationType.SUPER_ADMIN)
     @GetMapping("")
-    public ResponseEntity<List<UserDTO>> findAll() {
-        return this.usersBO.findAll();
+    public ResponseEntity<Page<UserDTO>> findAll(Pageable pageable) {
+        return this.usersBO.findAll(pageable);
     }
 
     @GetMapping("/{id}")

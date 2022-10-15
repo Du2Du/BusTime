@@ -15,6 +15,8 @@ import com.api.busTime.model.entities.UserRoles;
 import com.api.busTime.utils.CookieUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -112,19 +114,18 @@ public class UserBOImpl implements UsersBO {
 
     //Método que retorna todos os usuário
     @Override
-    public ResponseEntity<List<UserDTO>> findAll() {
-        List<User> allUsers;
-        List<UserDTO> allUsersReturn;
-        UserDTO currentUser = me();
+    public ResponseEntity<Page<UserDTO>> findAll(Pageable pageable) {
+        Page<User> allUsers;
+        Page<UserDTO> allUsersReturn;
 
-        allUsers = userDAO.findAll();
+        allUsers = userDAO.listAllForId(pageable);
 
-        allUsersReturn = allUsers.stream().map((user) -> {
+        allUsersReturn = allUsers.map((user) -> {
             UserDTO newUser = new UserDTO();
             BeanUtils.copyProperties(user, newUser);
 
             return newUser;
-        }).collect(Collectors.toList());
+        });
 
         return ResponseEntity.ok(allUsersReturn);
     }

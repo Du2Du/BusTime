@@ -5,6 +5,8 @@ import com.api.busTime.model.dtos.LogMessageDTO;
 import com.api.busTime.utils.AdminVerify;
 import com.api.busTime.utils.ValidationType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +25,7 @@ public class LogController {
 
     @AdminVerify(validationType = ValidationType.SUPER_ADMIN)
     @GetMapping
-    public ResponseEntity<List<LogMessageDTO>> getAllLogs() {
-        return logMessageBO.getAllLogs();
+    public ResponseEntity<Page<LogMessageDTO>> getAllLogs(Pageable pageable) {
+        return logMessageBO.getAllLogs(pageable);
     }
 }

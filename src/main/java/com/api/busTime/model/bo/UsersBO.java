@@ -4,6 +4,8 @@ import com.api.busTime.model.dtos.*;
 import com.api.busTime.model.entities.Bus;
 import com.api.busTime.model.entities.User;
 import com.api.busTime.model.entities.UserRoles;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
@@ -13,7 +15,7 @@ public interface UsersBO {
 
     UserDTO findById(Long userId);
 
-    ResponseEntity<List<UserDTO>> findAll();
+    ResponseEntity<Page<UserDTO>> findAll(Pageable pageable);
     
     ResponseEntity<UserDTO> setAdminUser(Long userId,  UpdatePermissionDTO updatePermissionDTO);
 

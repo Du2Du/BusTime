@@ -7,6 +7,8 @@ import com.api.busTime.model.dtos.LogMessageDTO;
 import com.api.busTime.model.entities.LogMessage;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -48,15 +50,17 @@ public class LogMessageBOImpl implements LogMessageBO {
     }
 
     @Override
-    public ResponseEntity<List<LogMessageDTO>> getAllLogs() {
-        List<LogMessage> logs = logMessageDAO.findAll();
-        List<LogMessageDTO> logsDTO;
-        logsDTO = logs.stream().map((log) -> {
+    public ResponseEntity<Page<LogMessageDTO>> getAllLogs(Pageable pageable) {
+        Page<LogMessage> logs = logMessageDAO.listForDate(pageable);
+        
+        Page<LogMessageDTO> logsDTO;
+        
+        logsDTO = logs.map((log) -> {
             LogMessageDTO logDTO = new LogMessageDTO();
 
             BeanUtils.copyProperties(log, logDTO);
             return logDTO;
-        }).collect(Collectors.toList());
+        });
 
         return ResponseEntity.ok(logsDTO);
     }
