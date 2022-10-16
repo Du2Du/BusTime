@@ -12,6 +12,10 @@ import java.util.List;
 
 @Repository
 public interface BusDAO extends PagingAndSortingRepository<Bus, Long> {
+    
+    @Query("SELECT b FROM Bus b")
+    List<Bus> listAllWithoutPage();
+    
     @Query("SELECT b FROM Bus b ORDER BY b.createAt DESC")
     Page<Bus> listForDate(Pageable pageable);
     

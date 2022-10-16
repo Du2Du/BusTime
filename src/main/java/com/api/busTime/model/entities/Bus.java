@@ -32,5 +32,7 @@ public class Bus {
     private Integer busNumber;
     @Column(nullable = false)
     private Long idUserAdmin;
+    @Column
+    private Long savedQuantity;
 
 }

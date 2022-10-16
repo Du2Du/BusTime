@@ -1,10 +1,12 @@
 package com.api.busTime.controllers;
 
 import com.api.busTime.model.dtos.BusDTO;
+import com.api.busTime.model.dtos.BusStatisticsDTO;
 import com.api.busTime.model.dtos.CreateBusDTO;
 import com.api.busTime.model.dtos.UpdateBusDTO;
 import com.api.busTime.model.bo.BusBO;
 import com.api.busTime.utils.AdminVerify;
+import com.api.busTime.utils.ValidationType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -64,6 +66,12 @@ public class BusController {
     @GetMapping
     public Page<BusDTO> listAll(Pageable pageable) {
         return this.busBO.listAll(pageable);
+    }
+    
+    @AdminVerify(validationType = ValidationType.SUPER_ADMIN)
+    @GetMapping("/statistics")
+    public ResponseEntity<List<BusStatisticsDTO>> listBusStatistics(){
+        return this.busBO.listBusStatistics();
     }
 
 }

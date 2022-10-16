@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RequestMapping("/api/v1/logs")
@@ -26,6 +24,6 @@ public class LogController {
     @AdminVerify(validationType = ValidationType.SUPER_ADMIN)
     @GetMapping
     public ResponseEntity<Page<LogMessageDTO>> getAllLogs(Pageable pageable) {
-        return logMessageBO.getAllLogs(pageable);
+        return this.logMessageBO.getAllLogs(pageable);
     }
 }

@@ -4,10 +4,7 @@ import com.api.busTime.exceptions.ResourceNotFoundException;
 import com.api.busTime.model.bo.BusBO;
 import com.api.busTime.model.bo.UsersBO;
 import com.api.busTime.model.dao.BusDAO;
-import com.api.busTime.model.dtos.BusDTO;
-import com.api.busTime.model.dtos.CreateBusDTO;
-import com.api.busTime.model.dtos.UpdateBusDTO;
-import com.api.busTime.model.dtos.UserDTO;
+import com.api.busTime.model.dtos.*;
 import com.api.busTime.model.entities.Bus;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,15 +27,16 @@ public class BusBOImpl implements BusBO {
 
     @Autowired
     private UsersBO userBO;
-    
+
     //Método que cria o onibus
     @Override
     public ResponseEntity<BusDTO> create(CreateBusDTO createBusDTO) {
         Bus bus = new Bus();
         BusDTO busReturn = new BusDTO();
-
+        
         //Colocando os valores de userDTO em user
         BeanUtils.copyProperties(createBusDTO, bus);
+        bus.setSavedQuantity(Long.valueOf(0));
         BeanUtils.copyProperties(this.busDAO.save(bus), busReturn);
 
         return ResponseEntity.ok(busReturn);
@@ -54,7 +54,7 @@ public class BusBOImpl implements BusBO {
         //Verificando se o id do usuárioAdmin é o mesmo do usuário logado
         if (!bus.getIdUserAdmin().equals(user.getId()))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
- 
+
         //Colocando os valores de userDTO em user
         BeanUtils.copyProperties(updateBusDTO, bus);
 
@@ -130,6 +130,7 @@ public class BusBOImpl implements BusBO {
     }
 
     //Método que lista os onibus paginado
+    @Override
     public Page<BusDTO> listAll(Pageable pageable) {
         Page<BusDTO> busReturn;
         busReturn = this.busDAO.listForDate(pageable).map((page) -> {
@@ -139,5 +140,22 @@ public class BusBOImpl implements BusBO {
         });
 
         return busReturn;
+    }
+
+    //Método que retorna a quantidade de onibus criados em um mes
+    @Override
+    public ResponseEntity<List<BusStatisticsDTO>> listBusStatistics() {
+        List<Bus> buses = busDAO.listAllWithoutPage();
+
+        List<BusStatisticsDTO> busStatisticsDTOS = buses.stream().map(bus -> {
+            BusStatisticsDTO busStatisticsDTO = new BusStatisticsDTO();
+
+            busStatisticsDTO.setBusSavedQuantity(bus.getSavedQuantity());
+            busStatisticsDTO.setBusNumber(bus.getBusNumber());
+            
+            return busStatisticsDTO;
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(busStatisticsDTOS);
     }
 }

@@ -168,6 +168,8 @@ public class UserBOImpl implements UsersBO {
         if (busList.contains(bus))
             return ResponseEntity.status(HttpStatus.ACCEPTED).build();
 
+        Long savedQuantity = bus.getSavedQuantity();
+        bus.setSavedQuantity(savedQuantity + 1);
         busList.add(bus);
 
         user.setFavoriteBus(busList);
@@ -200,7 +202,9 @@ public class UserBOImpl implements UsersBO {
         if (!busList.contains(bus))
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
-
+        Long savedQuantity = bus.getSavedQuantity();
+        bus.setSavedQuantity(savedQuantity - 1);
+        
         busList.remove(bus);
         user.setFavoriteBus(busList);
         userDAO.save(user);
@@ -211,7 +215,7 @@ public class UserBOImpl implements UsersBO {
 
             return busDTO;
         }).collect(Collectors.toList());
-        
+
         return ResponseEntity.ok(busDTOS);
     }
 
