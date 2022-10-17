@@ -5,13 +5,11 @@ import com.api.busTime.exceptions.ResourceNotFoundException;
 import com.api.busTime.model.bo.TokenProvider;
 import com.api.busTime.model.bo.UsersBO;
 import com.api.busTime.model.dao.BusDAO;
+import com.api.busTime.model.dao.LineBusDAO;
 import com.api.busTime.model.dao.PermissionsGroupDAO;
 import com.api.busTime.model.dao.UserDAO;
 import com.api.busTime.model.dtos.*;
-import com.api.busTime.model.entities.Bus;
-import com.api.busTime.model.entities.PermissionsGroup;
-import com.api.busTime.model.entities.User;
-import com.api.busTime.model.entities.UserRoles;
+import com.api.busTime.model.entities.*;
 import com.api.busTime.utils.CookieUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +46,9 @@ public class UserBOImpl implements UsersBO {
 
     @Autowired
     private CookieUtil cookieUtil;
+
+    @Autowired
+    private LineBusDAO lineDAO;
 
     public UserBOImpl(UserDAO userDAO) {
         this.userDAO = userDAO;
@@ -165,12 +166,22 @@ public class UserBOImpl implements UsersBO {
         List<Bus> busList = user.getFavoriteBus();
         List<BusDTO> busDTOS;
 
+
         if (busList.contains(bus))
             return ResponseEntity.status(HttpStatus.ACCEPTED).build();
 
-        Long savedQuantity = bus.getSavedQuantity();
-        bus.setSavedQuantity(savedQuantity + 1);
-        busList.add(bus);
+        Optional<LineBus> lineBus = this.lineDAO.findLineForName(bus.getLine());
+        if (lineBus.isPresent()) {
+            LineBus lineBus1 = lineBus.get();
+            Long savedQuantity = lineBus1.getSavedQuantity();
+            Long busSabedQuantity = bus.getBusSavedQuantity();
+            bus.setBusSavedQuantity(busSabedQuantity + 1);
+            busList.add(bus);
+
+            lineBus1.setSavedQuantity(savedQuantity + 1);
+            busDAO.save(bus);
+            lineDAO.save(lineBus1);
+        }
 
         user.setFavoriteBus(busList);
         userDAO.save(user);
@@ -202,9 +213,18 @@ public class UserBOImpl implements UsersBO {
         if (!busList.contains(bus))
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
-        Long savedQuantity = bus.getSavedQuantity();
-        bus.setSavedQuantity(savedQuantity - 1);
-        
+        Optional<LineBus> lineBus = this.lineDAO.findLineForName(bus.getLine());
+        if (lineBus.isPresent()) {
+            LineBus lineBus1 = lineBus.get();
+            Long savedQuantity = lineBus1.getSavedQuantity();
+            lineBus1.setSavedQuantity(savedQuantity - 1);
+            Long busSabedQuantity = bus.getBusSavedQuantity();
+            bus.setBusSavedQuantity(busSabedQuantity + 1);
+            busDAO.save(bus);
+            lineDAO.save(lineBus1);
+        }
+
+
         busList.remove(bus);
         user.setFavoriteBus(busList);
         userDAO.save(user);

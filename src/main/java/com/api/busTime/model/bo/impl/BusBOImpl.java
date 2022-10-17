@@ -4,8 +4,10 @@ import com.api.busTime.exceptions.ResourceNotFoundException;
 import com.api.busTime.model.bo.BusBO;
 import com.api.busTime.model.bo.UsersBO;
 import com.api.busTime.model.dao.BusDAO;
+import com.api.busTime.model.dao.LineBusDAO;
 import com.api.busTime.model.dtos.*;
 import com.api.busTime.model.entities.Bus;
+import com.api.busTime.model.entities.LineBus;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -14,9 +16,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.List;
+import javax.sound.sampled.Line;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,17 +28,40 @@ public class BusBOImpl implements BusBO {
     private BusDAO busDAO;
 
     @Autowired
+    private LineBusDAO lineDAO;
+
+    @Autowired
     private UsersBO userBO;
+
+    public boolean findBusWithNumber(Integer busNumber) {
+        Optional<Bus> bus = this.busDAO.listBusForNumber(busNumber);
+
+        return !bus.isPresent();
+    }
 
     //Método que cria o onibus
     @Override
     public ResponseEntity<BusDTO> create(CreateBusDTO createBusDTO) {
         Bus bus = new Bus();
+
+        if (!findBusWithNumber(createBusDTO.getBusNumber())) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
         BusDTO busReturn = new BusDTO();
-        
+
+        Optional<LineBus> lineBus = this.lineDAO.findLineForName(createBusDTO.getLine());
+        bus.setBusSavedQuantity(Long.valueOf(0));
+        if (!lineBus.isPresent()) {
+            LineBus lineBus1 = new LineBus();
+
+            lineBus1.setSavedQuantity(Long.valueOf(0));
+            lineBus1.setLineName(createBusDTO.getLine());
+
+            lineDAO.save(lineBus1);
+        }
+
         //Colocando os valores de userDTO em user
         BeanUtils.copyProperties(createBusDTO, bus);
-        bus.setSavedQuantity(Long.valueOf(0));
+
         BeanUtils.copyProperties(this.busDAO.save(bus), busReturn);
 
         return ResponseEntity.ok(busReturn);
@@ -55,8 +80,21 @@ public class BusBOImpl implements BusBO {
         if (!bus.getIdUserAdmin().equals(user.getId()))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
+        Optional<LineBus> lineBus = this.lineDAO.findLineForName(updateBusDTO.getLine());
+
+        if (lineBus.isPresent()) {
+            Long quantity = lineBus.get().getSavedQuantity();
+            lineBus.get().setSavedQuantity(quantity + bus.getBusSavedQuantity());
+            lineDAO.save(lineBus.get());
+        } else {
+            LineBus lineBus1 = new LineBus();
+            lineBus1.setSavedQuantity(bus.getBusSavedQuantity());
+            lineBus1.setLineName(updateBusDTO.getLine());
+            lineDAO.save(lineBus1);
+        }
         //Colocando os valores de userDTO em user
         BeanUtils.copyProperties(updateBusDTO, bus);
+
 
         BeanUtils.copyProperties(this.busDAO.save(bus), busReturn);
 
@@ -102,7 +140,6 @@ public class BusBOImpl implements BusBO {
 
         if (!userId.equals(user.getId())) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
-
         busReturn = this.busDAO.listBusForUserId(userId).stream().map((bus) -> {
 
             BusDTO busDTO = new BusDTO();
@@ -145,14 +182,15 @@ public class BusBOImpl implements BusBO {
     //Método que retorna a quantidade de onibus criados em um mes
     @Override
     public ResponseEntity<List<BusStatisticsDTO>> listBusStatistics() {
-        List<Bus> buses = busDAO.listAllWithoutPage();
+        List<LineBus> lineBus = this.lineDAO.findAllOrdenable();
 
-        List<BusStatisticsDTO> busStatisticsDTOS = buses.stream().map(bus -> {
+
+        List<BusStatisticsDTO> busStatisticsDTOS = lineBus.stream().map(bus -> {
             BusStatisticsDTO busStatisticsDTO = new BusStatisticsDTO();
 
-            busStatisticsDTO.setBusSavedQuantity(bus.getSavedQuantity());
-            busStatisticsDTO.setBusNumber(bus.getBusNumber());
-            
+            busStatisticsDTO.setSavedQuantity(bus.getSavedQuantity());
+            busStatisticsDTO.setLineName(bus.getLineName().toUpperCase());
+
             return busStatisticsDTO;
         }).collect(Collectors.toList());
 

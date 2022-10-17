@@ -9,12 +9,13 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BusDAO extends PagingAndSortingRepository<Bus, Long> {
     
     @Query("SELECT b FROM Bus b")
-    List<Bus> listAllWithoutPage();
+    List<Bus> listAllBus();
     
     @Query("SELECT b FROM Bus b ORDER BY b.createAt DESC")
     Page<Bus> listForDate(Pageable pageable);
@@ -22,6 +23,9 @@ public interface BusDAO extends PagingAndSortingRepository<Bus, Long> {
     @Query("SELECT b FROM Bus b WHERE lower(b.line) like lower(?1) ORDER BY b.createAt DESC")
     Page<Bus> listBusForLine(String line, Pageable pageable);
 
+    @Query("SELECT b FROM Bus b WHERE b.busNumber = ?1")
+    Optional<Bus> listBusForNumber(Integer busNumber);
+    
     @Query("SELECT b FROM Bus b INNER JOIN User u ON b.idUserAdmin = u.id WHERE u.id = ?1 ORDER BY b.createAt DESC")
     List<Bus> listBusForUserId(Long userId);
 }   

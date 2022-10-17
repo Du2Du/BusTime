@@ -8,7 +8,7 @@ import javax.validation.constraints.NotBlank;
 public class BusStatisticsDTO {
 
     @NotBlank
-    private Integer busNumber;
+    private String lineName;
     @NotBlank
-    private Long busSavedQuantity;
+    private Long savedQuantity;
 }

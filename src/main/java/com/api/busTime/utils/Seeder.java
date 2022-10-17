@@ -1,10 +1,10 @@
 package com.api.busTime.utils;
 
+import com.api.busTime.model.dao.BusDAO;
+import com.api.busTime.model.dao.LineBusDAO;
 import com.api.busTime.model.dao.PermissionDAO;
 import com.api.busTime.model.dao.PermissionsGroupDAO;
-import com.api.busTime.model.entities.Permission;
-import com.api.busTime.model.entities.PermissionsGroup;
-import com.api.busTime.model.entities.UserRoles;
+import com.api.busTime.model.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -16,7 +16,7 @@ import java.util.List;
 //eu não preciso mais do código dentro da função loadPermissionData e loadPermissionGroupData ja que ja foi cadastrado no banco,
 //mas deixei para o senhor ver como fiz, futuramente irei fazer uma opção do usuário adicionar uma permissão no frontend
 @Component
-public class PermissionGroupDataLoader implements CommandLineRunner {
+public class Seeder implements CommandLineRunner {
 
     @Autowired
     private PermissionsGroupDAO permissionsGroupDAO;
