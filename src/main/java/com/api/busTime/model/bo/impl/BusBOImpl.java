@@ -32,8 +32,6 @@ public class BusBOImpl implements BusBO {
     @Autowired
     private LineBusBO lineBusBO;
 
-    private final UserDTO user = userBO.me();
-
     public boolean findBusWithNumber(Integer busNumber) {
         Optional<Bus> bus = this.busDAO.listBusForNumber(busNumber);
 
@@ -70,6 +68,7 @@ public class BusBOImpl implements BusBO {
     //Método que atualiza as informações do onibus
     @Override
     public ResponseEntity<BusDTO> update(Long busId, UpdateBusDTO updateBusDTO) {
+        UserDTO user = userBO.me();
 
         //Verificando se existe algum onibus com esse id
         Bus bus = this.busDAO.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
@@ -97,6 +96,7 @@ public class BusBOImpl implements BusBO {
     //Método que irá deletar o onibus
     @Override
     public ResponseEntity<String> delete(Long busId) {
+        UserDTO user = userBO.me();
 
         //Verificando se existe algum onibus com esse id
         Bus bus = this.busDAO.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
@@ -126,6 +126,7 @@ public class BusBOImpl implements BusBO {
     @Override
     public ResponseEntity<List<BusDTO>> findBusForUser(Long userId) {
         List<BusDTO> busReturn;
+        UserDTO user = userBO.me();
 
         if (!userId.equals(user.getId())) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 

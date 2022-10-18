@@ -49,8 +49,6 @@ public class UserBOImpl implements UsersBO {
 
     @Autowired
     private CookieUtil cookieUtil;
-    
-    private final UserDTO currentUser = me();
 
     public UserBOImpl(UserDAO userDAO) {
         this.userDAO = userDAO;
@@ -159,7 +157,9 @@ public class UserBOImpl implements UsersBO {
     //Método que favorita um onibus
     @Override
     public ResponseEntity<List<BusDTO>> favoriteBus(Long busId, Long userId) {
-        if (!Objects.equals(this.currentUser.getId(), userId)) {
+        UserDTO currentUser = me();
+        
+        if (!Objects.equals(currentUser.getId(), userId)) {
 
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -186,8 +186,9 @@ public class UserBOImpl implements UsersBO {
     //Método que desfavorita um onibus
     @Override
     public ResponseEntity<List<BusDTO>> desfavoriteBus(Long busId, Long userId) {
+        UserDTO currenUser = me();
 
-        if (!Objects.equals(this.currentUser.getId(), userId))
+        if (!Objects.equals(currenUser.getId(), userId))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
 
@@ -306,6 +307,8 @@ public class UserBOImpl implements UsersBO {
     //Método que irá fazer o update do usuário
     @Override
     public ResponseEntity<UserDTO> update(Long userId, UpdateUserDTO updateUserDTO) {
+        UserDTO currentUser = me();
+
         if (!currentUser.getId().equals(userId)) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
         UserDTO userDTO = findById(userId);
