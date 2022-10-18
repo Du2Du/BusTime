@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
 public class CreateBusDTO {
     
     @NotBlank
-    private String line;
+    private LineBusDTO lineBus;
     @NotBlank
     @JsonFormat(pattern = "HH:mm")
     private String hour;

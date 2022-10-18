@@ -13,19 +13,16 @@ import java.util.Optional;
 
 @Repository
 public interface BusDAO extends PagingAndSortingRepository<Bus, Long> {
-    
-    @Query("SELECT b FROM Bus b")
-    List<Bus> listAllBus();
-    
+
     @Query("SELECT b FROM Bus b ORDER BY b.createAt DESC")
     Page<Bus> listForDate(Pageable pageable);
-    
-    @Query("SELECT b FROM Bus b WHERE lower(b.line) like lower(?1) ORDER BY b.createAt DESC")
+
+    @Query("SELECT b FROM Bus b WHERE b.lineBus.lineName = ?1")
     Page<Bus> listBusForLine(String line, Pageable pageable);
 
     @Query("SELECT b FROM Bus b WHERE b.busNumber = ?1")
     Optional<Bus> listBusForNumber(Integer busNumber);
-    
+
     @Query("SELECT b FROM Bus b INNER JOIN User u ON b.idUserAdmin = u.id WHERE u.id = ?1 ORDER BY b.createAt DESC")
     List<Bus> listBusForUserId(Long userId);
 }   

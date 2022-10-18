@@ -2,8 +2,7 @@ package com.api.busTime.model.bo.impl;
 
 import com.api.busTime.exceptions.EntityExistsException;
 import com.api.busTime.exceptions.ResourceNotFoundException;
-import com.api.busTime.model.bo.TokenProvider;
-import com.api.busTime.model.bo.UsersBO;
+import com.api.busTime.model.bo.*;
 import com.api.busTime.model.dao.BusDAO;
 import com.api.busTime.model.dao.LineBusDAO;
 import com.api.busTime.model.dao.PermissionsGroupDAO;
@@ -13,6 +12,7 @@ import com.api.busTime.model.entities.*;
 import com.api.busTime.utils.CookieUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -36,19 +36,21 @@ public class UserBOImpl implements UsersBO {
     private UserDAO userDAO;
 
     @Autowired
-    private BusDAO busDAO;
+    private BusBO busBO;
 
     @Autowired
-    private PermissionsGroupDAO permissionsGroupDAO;
+    private LineBusBO lineBusBO;
+
+    @Autowired
+    private PermissionsBO permissionsGroupBO;
 
     @Autowired
     private TokenProvider tokenProvider;
 
     @Autowired
     private CookieUtil cookieUtil;
-
-    @Autowired
-    private LineBusDAO lineDAO;
+    
+    private final UserDTO currentUser = me();
 
     public UserBOImpl(UserDAO userDAO) {
         this.userDAO = userDAO;
@@ -97,7 +99,10 @@ public class UserBOImpl implements UsersBO {
         UserDTO userReturn = new UserDTO();
 
         //Colocando os valores de userDTO em user
-        BeanUtils.copyProperties(userDTO, user);
+        BeanUtils.copyProperties(userDTO, userReturn);
+        userReturn.setPermissionsGroup(permissionsGroupBO.findByName(UserRoles.DEFAULT).getBody());
+
+        BeanUtils.copyProperties(userReturn, user);
 
         //Encriptografando senha
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(10, new SecureRandom());
@@ -105,7 +110,6 @@ public class UserBOImpl implements UsersBO {
         user.setPassword(encodedPassword);
 
         //Deixando usuário como user normal
-        user.setPermissionsGroup(this.permissionsGroupDAO.findByName(UserRoles.DEFAULT));
 
         //Criando usuário
         BeanUtils.copyProperties(this.userDAO.save(user), userReturn);
@@ -134,19 +138,20 @@ public class UserBOImpl implements UsersBO {
     //Método que atualiza o atributo isAdmin de um usuario
     @Override
     public ResponseEntity<UserDTO> setAdminUser(Long userId, UpdatePermissionDTO updatePermissionDTO) {
-        User user = userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
-        UserDTO userReturn = new UserDTO();
-
-        PermissionsGroup permissionsGroup = this.permissionsGroupDAO.findByName(updatePermissionDTO.getPermissionGroup());
-
-        if (permissionsGroup == null)
+        UserDTO user = findById(userId);
+        PermissionsGroupDTO permissionsGroupDTO = permissionsGroupBO.findByName(UserRoles.DEFAULT).getBody();
+        
+        if (permissionsGroupDTO == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
-        user.setPermissionsGroup(permissionsGroup);
+        user.setPermissionsGroup(permissionsGroupDTO);
 
-        BeanUtils.copyProperties(userDAO.save(user), userReturn);
+        User userSave = new User();
 
-        return ResponseEntity.ok(userReturn);
+        BeanUtils.copyProperties(user, userSave);
+        userDAO.save(userSave);
+
+        return ResponseEntity.ok(user);
 
 
     }
@@ -154,89 +159,59 @@ public class UserBOImpl implements UsersBO {
     //Método que favorita um onibus
     @Override
     public ResponseEntity<List<BusDTO>> favoriteBus(Long busId, Long userId) {
-        UserDTO currenUser = me();
-
-        if (!Objects.equals(currenUser.getId(), userId)) {
+        if (!Objects.equals(this.currentUser.getId(), userId)) {
 
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        User user = userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+        UserDTO user = findById(userId);
 
-        Bus bus = busDAO.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
-        List<Bus> busList = user.getFavoriteBus();
-        List<BusDTO> busDTOS;
+        BusDTO bus = busBO.getById(busId).getBody();
 
-
+        List<BusDTO> busList = user.getFavoriteBus();
         if (busList.contains(bus))
             return ResponseEntity.status(HttpStatus.ACCEPTED).build();
 
-        Optional<LineBus> lineBus = this.lineDAO.findLineForName(bus.getLine());
-        if (lineBus.isPresent()) {
-            LineBus lineBus1 = lineBus.get();
-            Long savedQuantity = lineBus1.getSavedQuantity();
-            Long busSabedQuantity = bus.getBusSavedQuantity();
-            bus.setBusSavedQuantity(busSabedQuantity + 1);
-            busList.add(bus);
-
-            lineBus1.setSavedQuantity(savedQuantity + 1);
-            busDAO.save(bus);
-            lineDAO.save(lineBus1);
-        }
+        busList.add(bus);
 
         user.setFavoriteBus(busList);
-        userDAO.save(user);
 
-        busDTOS = user.getFavoriteBus().stream().map((favoriteBus) -> {
-            BusDTO busDTO = new BusDTO();
-            BeanUtils.copyProperties(favoriteBus, busDTO);
+        User userSave = new User();
 
-            return busDTO;
-        }).collect(Collectors.toList());
+        BeanUtils.copyProperties(user, userSave);
+        userDAO.save(userSave);
 
-        return ResponseEntity.ok(busDTOS);
+        return ResponseEntity.ok(busList);
     }
 
     //Método que desfavorita um onibus
     @Override
     public ResponseEntity<List<BusDTO>> desfavoriteBus(Long busId, Long userId) {
-        UserDTO currenUser = me();
 
-        if (!Objects.equals(currenUser.getId(), userId))
+        if (!Objects.equals(this.currentUser.getId(), userId))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
 
-        User user = userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
-        Bus bus = busDAO.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
-        List<Bus> busList = user.getFavoriteBus();
-        List<BusDTO> busDTOS;
+        UserDTO user = findById(userId);
+        BusDTO busDTO = busBO.getById(busId).getBody();
 
-        if (!busList.contains(bus))
+        List<BusDTO> busList = user.getFavoriteBus();
+
+
+        if (!busList.contains(busDTO))
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
-        Optional<LineBus> lineBus = this.lineDAO.findLineForName(bus.getLine());
-        if (lineBus.isPresent()) {
-            LineBus lineBus1 = lineBus.get();
-            Long savedQuantity = lineBus1.getSavedQuantity();
-            lineBus1.setSavedQuantity(savedQuantity - 1);
-            Long busSabedQuantity = bus.getBusSavedQuantity();
-            bus.setBusSavedQuantity(busSabedQuantity + 1);
-            busDAO.save(bus);
-            lineDAO.save(lineBus1);
-        }
 
-
-        busList.remove(bus);
+        busList.remove(busDTO);
         user.setFavoriteBus(busList);
-        userDAO.save(user);
 
-        busDTOS = user.getFavoriteBus().stream().map((favoriteBus) -> {
-            BusDTO busDTO = new BusDTO();
-            BeanUtils.copyProperties(favoriteBus, busDTO);
 
-            return busDTO;
-        }).collect(Collectors.toList());
+        User userSave = new User();
 
-        return ResponseEntity.ok(busDTOS);
+        BeanUtils.copyProperties(user, userSave);
+        userDAO.save(userSave);
+
+
+        return ResponseEntity.ok(busList);
     }
 
     //Método que irá logar o usuário
@@ -331,19 +306,18 @@ public class UserBOImpl implements UsersBO {
     //Método que irá fazer o update do usuário
     @Override
     public ResponseEntity<UserDTO> update(Long userId, UpdateUserDTO updateUserDTO) {
-        //Verificando se existe algum usuário com esse id
-        UserDTO currentUser = me();
-        User user = this.userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
-        UserDTO userReturn = new UserDTO();
-
         if (!currentUser.getId().equals(userId)) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
+        UserDTO userDTO = findById(userId);
+        User user = new User();
+
+
         //Colocando os valores de updateUserDTO em user
-        BeanUtils.copyProperties(updateUserDTO, user);
+        BeanUtils.copyProperties(updateUserDTO, userDTO);
+        BeanUtils.copyProperties(userDTO, user);
+        this.userDAO.save(user);
 
-        BeanUtils.copyProperties(this.userDAO.save(user), userReturn);
-
-        return ResponseEntity.ok(userReturn);
+        return ResponseEntity.ok(userDTO);
     }
 
     //Método que irá deletar o usuário
@@ -351,7 +325,10 @@ public class UserBOImpl implements UsersBO {
     public ResponseEntity<String> delete(Long userId) {
 
         //Procurando o usuário pelo id
-        User user = this.userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
+        UserDTO userDTO = findById(userId);
+        User user = new User();
+
+        BeanUtils.copyProperties(userDTO, user);
 
         this.userDAO.delete(user);
         return ResponseEntity.ok("Usuário Deletado com sucesso");

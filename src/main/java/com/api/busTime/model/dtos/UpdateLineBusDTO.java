@@ -5,10 +5,8 @@ import lombok.Data;
 import javax.validation.constraints.NotBlank;
 
 @Data
-public class BusStatisticsDTO {
-
+public class UpdateLineBusDTO extends CreateLineBusDTO {
+    
     @NotBlank
-    private String lineName;
-    @NotBlank
-    private Long savedQuantity;
+    private Long id;
 }

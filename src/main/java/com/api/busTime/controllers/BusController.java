@@ -1,7 +1,7 @@
 package com.api.busTime.controllers;
 
 import com.api.busTime.model.dtos.BusDTO;
-import com.api.busTime.model.dtos.BusStatisticsDTO;
+import com.api.busTime.model.dtos.LineBusDTO;
 import com.api.busTime.model.dtos.CreateBusDTO;
 import com.api.busTime.model.dtos.UpdateBusDTO;
 import com.api.busTime.model.bo.BusBO;
@@ -40,8 +40,8 @@ public class BusController {
     }
 
     @GetMapping("/line")
-    public Page<BusDTO> listForLine(@RequestParam(name = "line") String line, Pageable pageable) {
-        return this.busBO.listForLine(line, pageable);
+    public Page<BusDTO> listBusForLine(@RequestParam(name = "line") String line, Pageable pageable) {
+        return this.busBO.listBusForLine(line, pageable);
     }
 
     @AdminVerify
@@ -68,10 +68,10 @@ public class BusController {
         return this.busBO.listAll(pageable);
     }
     
-    @AdminVerify(validationType = ValidationType.SUPER_ADMIN)
-    @GetMapping("/statistics")
-    public ResponseEntity<List<BusStatisticsDTO>> listBusStatistics(){
-        return this.busBO.listBusStatistics();
-    }
+//    @AdminVerify(validationType = ValidationType.SUPER_ADMIN)
+//    @GetMapping("/statistics")
+//    public ResponseEntity<List<LineBusDTO>> listBusStatistics(){
+//        return this.busBO.listBusStatistics();
+//    }
 
 }

@@ -1,10 +1,9 @@
 package com.api.busTime.model.bo;
 
 import com.api.busTime.model.dtos.BusDTO;
-import com.api.busTime.model.dtos.BusStatisticsDTO;
+import com.api.busTime.model.dtos.LineBusDTO;
 import com.api.busTime.model.dtos.CreateBusDTO;
 import com.api.busTime.model.dtos.UpdateBusDTO;
-import com.api.busTime.model.entities.Bus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -23,10 +22,8 @@ public interface BusBO {
 
     Page<BusDTO> listAll(Pageable pageable);
 
-    Page<BusDTO> listForLine(String line, Pageable pageable);
+    Page<BusDTO> listBusForLine(String line, Pageable pageable);
 
     ResponseEntity<String> delete(Long busId);
-
-    ResponseEntity<List<BusStatisticsDTO>> listBusStatistics();
-
+    
 }

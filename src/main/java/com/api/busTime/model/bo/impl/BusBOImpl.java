@@ -2,6 +2,7 @@ package com.api.busTime.model.bo.impl;
 
 import com.api.busTime.exceptions.ResourceNotFoundException;
 import com.api.busTime.model.bo.BusBO;
+import com.api.busTime.model.bo.LineBusBO;
 import com.api.busTime.model.bo.UsersBO;
 import com.api.busTime.model.dao.BusDAO;
 import com.api.busTime.model.dao.LineBusDAO;
@@ -16,9 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import javax.sound.sampled.Line;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,10 +27,12 @@ public class BusBOImpl implements BusBO {
     private BusDAO busDAO;
 
     @Autowired
-    private LineBusDAO lineDAO;
+    private UsersBO userBO;
 
     @Autowired
-    private UsersBO userBO;
+    private LineBusBO lineBusBO;
+
+    private final UserDTO user = userBO.me();
 
     public boolean findBusWithNumber(Integer busNumber) {
         Optional<Bus> bus = this.busDAO.listBusForNumber(busNumber);
@@ -44,20 +45,19 @@ public class BusBOImpl implements BusBO {
     public ResponseEntity<BusDTO> create(CreateBusDTO createBusDTO) {
         Bus bus = new Bus();
 
-        if (!findBusWithNumber(createBusDTO.getBusNumber())) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        if (!findBusWithNumber(createBusDTO.getBusNumber()))
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+
+        //Buscando se a linha de ônibus existe
+        LineBusDTO lineBusDTO = this.lineBusBO.getLineByName(createBusDTO.getLineBus().getLineName()).getBody();
+        LineBus lineBus = new LineBus();
+
+        assert lineBusDTO != null;
+        BeanUtils.copyProperties(lineBusDTO, lineBus);
+
+        bus.setLineBus(lineBus);
 
         BusDTO busReturn = new BusDTO();
-
-        Optional<LineBus> lineBus = this.lineDAO.findLineForName(createBusDTO.getLine());
-        bus.setBusSavedQuantity(Long.valueOf(0));
-        if (!lineBus.isPresent()) {
-            LineBus lineBus1 = new LineBus();
-
-            lineBus1.setSavedQuantity(Long.valueOf(0));
-            lineBus1.setLineName(createBusDTO.getLine());
-
-            lineDAO.save(lineBus1);
-        }
 
         //Colocando os valores de userDTO em user
         BeanUtils.copyProperties(createBusDTO, bus);
@@ -70,7 +70,6 @@ public class BusBOImpl implements BusBO {
     //Método que atualiza as informações do onibus
     @Override
     public ResponseEntity<BusDTO> update(Long busId, UpdateBusDTO updateBusDTO) {
-        UserDTO user = userBO.me();
 
         //Verificando se existe algum onibus com esse id
         Bus bus = this.busDAO.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
@@ -80,18 +79,12 @@ public class BusBOImpl implements BusBO {
         if (!bus.getIdUserAdmin().equals(user.getId()))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
-        Optional<LineBus> lineBus = this.lineDAO.findLineForName(updateBusDTO.getLine());
+        if (!Objects.equals(updateBusDTO.getLineBus().getId(), bus.getLineBus().getId())) {
+            LineBusDTO lineBusDTO = this.lineBusBO.getLineByName(updateBusDTO.getLineBus().getLineName()).getBody();
 
-        if (lineBus.isPresent()) {
-            Long quantity = lineBus.get().getSavedQuantity();
-            lineBus.get().setSavedQuantity(quantity + bus.getBusSavedQuantity());
-            lineDAO.save(lineBus.get());
-        } else {
-            LineBus lineBus1 = new LineBus();
-            lineBus1.setSavedQuantity(bus.getBusSavedQuantity());
-            lineBus1.setLineName(updateBusDTO.getLine());
-            lineDAO.save(lineBus1);
+            updateBusDTO.setLineBus(lineBusDTO);
         }
+
         //Colocando os valores de userDTO em user
         BeanUtils.copyProperties(updateBusDTO, bus);
 
@@ -104,7 +97,6 @@ public class BusBOImpl implements BusBO {
     //Método que irá deletar o onibus
     @Override
     public ResponseEntity<String> delete(Long busId) {
-        UserDTO user = userBO.me();
 
         //Verificando se existe algum onibus com esse id
         Bus bus = this.busDAO.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
@@ -133,10 +125,7 @@ public class BusBOImpl implements BusBO {
     //Método que retorna os onibus criados pelo usuario
     @Override
     public ResponseEntity<List<BusDTO>> findBusForUser(Long userId) {
-        UserDTO user;
         List<BusDTO> busReturn;
-
-        user = userBO.me();
 
         if (!userId.equals(user.getId())) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
@@ -152,7 +141,7 @@ public class BusBOImpl implements BusBO {
 
     //Método que lista os onibus pela linha
     @Override
-    public Page<BusDTO> listForLine(String line, Pageable pageable) {
+    public Page<BusDTO> listBusForLine(String line, Pageable pageable) {
 
         Page<Bus> bus = this.busDAO.listBusForLine(line, pageable);
         Page<BusDTO> busReturn;
@@ -165,6 +154,7 @@ public class BusBOImpl implements BusBO {
 
         return busReturn;
     }
+
 
     //Método que lista os onibus paginado
     @Override
@@ -179,21 +169,4 @@ public class BusBOImpl implements BusBO {
         return busReturn;
     }
 
-    //Método que retorna a quantidade de onibus criados em um mes
-    @Override
-    public ResponseEntity<List<BusStatisticsDTO>> listBusStatistics() {
-        List<LineBus> lineBus = this.lineDAO.findAllOrdenable();
-
-
-        List<BusStatisticsDTO> busStatisticsDTOS = lineBus.stream().map(bus -> {
-            BusStatisticsDTO busStatisticsDTO = new BusStatisticsDTO();
-
-            busStatisticsDTO.setSavedQuantity(bus.getSavedQuantity());
-            busStatisticsDTO.setLineName(bus.getLineName().toUpperCase());
-
-            return busStatisticsDTO;
-        }).collect(Collectors.toList());
-
-        return ResponseEntity.ok(busStatisticsDTOS);
-    }
 }

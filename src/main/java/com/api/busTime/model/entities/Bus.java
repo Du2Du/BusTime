@@ -15,9 +15,7 @@ public class Bus {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(nullable = false)
-    private String line;
+    
     @Column(nullable = false)
     private String hour;
     @Column(nullable = false)
@@ -32,7 +30,7 @@ public class Bus {
     private Integer busNumber;
     @Column(nullable = false)
     private Long idUserAdmin;
-    @Column(nullable = false)
-    private Long busSavedQuantity;
+    @ManyToOne
+    private LineBus lineBus;
 
 }
