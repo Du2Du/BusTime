@@ -10,8 +10,6 @@ import java.util.Optional;
 
 @Repository
 public interface LineBusDAO extends JpaRepository<LineBus, Long> {
-    @Query("SELECT l FROM LineBus  l ORDER BY l.savedQuantity DESC")
-    List<LineBus> findAllOrdenable();
     
     @Query("SELECT l FROM LineBus l where lower(l.lineName) = lower(?1)")
     Optional<LineBus> findLineForName(String name);

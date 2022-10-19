@@ -8,5 +8,4 @@ import javax.validation.constraints.NotBlank;
 public class CreateLineBusDTO {
     @NotBlank
     private String lineName;
-    private Long savedQuantity;
 }

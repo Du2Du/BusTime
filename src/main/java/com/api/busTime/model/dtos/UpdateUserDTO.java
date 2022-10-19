@@ -16,7 +16,6 @@ import java.util.Date;
 public class UpdateUserDTO {
     @NotBlank
     private String name;
-    @NotBlank
     @Email
     private String email;
     @NotNull

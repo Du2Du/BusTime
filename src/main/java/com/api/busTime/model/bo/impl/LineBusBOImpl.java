@@ -28,13 +28,12 @@ public class LineBusBOImpl implements LineBusBO {
         Optional<LineBus> lineBus = this.lineDAO.findLineForName(lineBusDTO.getLineName());
 
         if (lineBus.isPresent()) return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-
-        LineBus lineBus1 = new LineBus();
+      
         LineBusDTO lineBusReturn = new LineBusDTO();
+        LineBus lineBus1 = new LineBus();
+        
+        BeanUtils.copyProperties(lineBusDTO,lineBus1 );
 
-        lineBusDTO.setSavedQuantity(0L);
-
-        BeanUtils.copyProperties(lineBusDTO, lineBus1);
         BeanUtils.copyProperties(this.lineDAO.save(lineBus1), lineBusReturn);
         return ResponseEntity.ok(lineBusReturn);
     }
@@ -70,26 +69,18 @@ public class LineBusBOImpl implements LineBusBO {
 
         LineBusDTO lineBusDTO = new LineBusDTO();
 
-        BeanUtils.copyProperties(lineBus, lineBusDTO);
+        BeanUtils.copyProperties(lineBus.get(), lineBusDTO);
 
         return ResponseEntity.ok(lineBusDTO);
     }
 
     //Método que retorna a quantidade de onibus criados em um mes
-    @Override
-    public ResponseEntity<List<LineBusDTO>> listBusStatistics() {
-        List<LineBus> lineBus = this.lineDAO.findAllOrdenable();
-
-
-        List<LineBusDTO> lineBusDTOS = lineBus.stream().map(bus -> {
-            LineBusDTO lineBusDTO = new LineBusDTO();
-
-            lineBusDTO.setSavedQuantity(bus.getSavedQuantity());
-            lineBusDTO.setLineName(bus.getLineName().toUpperCase());
-
-            return lineBusDTO;
-        }).collect(Collectors.toList());
-
-        return ResponseEntity.ok(lineBusDTOS);
-    }
+//    @Override
+//    public ResponseEntity<List<LineBusDTO>> listBusStatistics() {
+//
+//
+//        List<LineBusDTO> lineBusDTOS;
+//
+//        return ResponseEntity.ok(lineBusDTOS);
+//    }
 }

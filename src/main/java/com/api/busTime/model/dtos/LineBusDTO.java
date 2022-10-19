@@ -12,5 +12,4 @@ public class LineBusDTO {
     
     @NotBlank
     private String lineName;
-    private Long savedQuantity;
 }

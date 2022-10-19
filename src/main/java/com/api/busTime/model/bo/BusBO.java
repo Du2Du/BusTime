@@ -16,14 +16,14 @@ public interface BusBO {
 
     ResponseEntity<BusDTO> create(CreateBusDTO createBusDTO);
 
-    ResponseEntity<BusDTO> update(Long busId, UpdateBusDTO updateBusDTO);
+    ResponseEntity<BusDTO> update(Long busId, UpdateBusDTO updateBusDTO, UsersBO userBO);
 
-    ResponseEntity<List<BusDTO>> findBusForUser(Long userId);
+    ResponseEntity<List<BusDTO>> findBusForUser(Long userId, UsersBO userBO);
 
     Page<BusDTO> listAll(Pageable pageable);
 
     Page<BusDTO> listBusForLine(String line, Pageable pageable);
 
-    ResponseEntity<String> delete(Long busId);
-    
+    ResponseEntity<String> delete(Long busId, UsersBO userBO);
+
 }

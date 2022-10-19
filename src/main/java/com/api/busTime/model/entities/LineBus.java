@@ -14,7 +14,4 @@ public class LineBus {
     
     @Column(nullable = false, unique = true)
     private String lineName;
-
-    @Column(nullable = false)
-    private Long savedQuantity;
 }

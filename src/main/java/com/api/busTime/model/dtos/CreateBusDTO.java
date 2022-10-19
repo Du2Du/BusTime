@@ -11,8 +11,8 @@ import javax.validation.constraints.NotNull;
 @Setter
 public class CreateBusDTO {
     
-    @NotBlank
-    private LineBusDTO lineBus;
+    @NotNull
+    private CreateLineBusDTO lineBus;
     @NotBlank
     @JsonFormat(pattern = "HH:mm")
     private String hour;

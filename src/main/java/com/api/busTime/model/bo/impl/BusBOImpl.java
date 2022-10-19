@@ -27,9 +27,6 @@ public class BusBOImpl implements BusBO {
     private BusDAO busDAO;
 
     @Autowired
-    private UsersBO userBO;
-
-    @Autowired
     private LineBusBO lineBusBO;
 
     public boolean findBusWithNumber(Integer busNumber) {
@@ -49,8 +46,10 @@ public class BusBOImpl implements BusBO {
         //Buscando se a linha de ônibus existe
         LineBusDTO lineBusDTO = this.lineBusBO.getLineByName(createBusDTO.getLineBus().getLineName()).getBody();
         LineBus lineBus = new LineBus();
+        CreateLineBusDTO createLineBusDTO = createBusDTO.getLineBus();
+        if (lineBusDTO == null)
+            lineBusDTO = lineBusBO.create(createLineBusDTO).getBody();
 
-        assert lineBusDTO != null;
         BeanUtils.copyProperties(lineBusDTO, lineBus);
 
         bus.setLineBus(lineBus);
@@ -60,6 +59,8 @@ public class BusBOImpl implements BusBO {
         //Colocando os valores de userDTO em user
         BeanUtils.copyProperties(createBusDTO, bus);
 
+        System.out.println(bus.toString());
+
         BeanUtils.copyProperties(this.busDAO.save(bus), busReturn);
 
         return ResponseEntity.ok(busReturn);
@@ -67,26 +68,32 @@ public class BusBOImpl implements BusBO {
 
     //Método que atualiza as informações do onibus
     @Override
-    public ResponseEntity<BusDTO> update(Long busId, UpdateBusDTO updateBusDTO) {
+    public ResponseEntity<BusDTO> update(Long busId, UpdateBusDTO updateBusDTO, UsersBO userBO) {
         UserDTO user = userBO.me();
 
         //Verificando se existe algum onibus com esse id
         Bus bus = this.busDAO.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
         BusDTO busReturn = new BusDTO();
-
+        LineBus lineBus1 = new LineBus();
         //Verificando se o id do usuárioAdmin é o mesmo do usuário logado
         if (!bus.getIdUserAdmin().equals(user.getId()))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        LineBusDTO lineBusDTO = this.lineBusBO.getLineByName(updateBusDTO.getLineBus().getLineName()).getBody();
 
-        if (!Objects.equals(updateBusDTO.getLineBus().getId(), bus.getLineBus().getId())) {
-            LineBusDTO lineBusDTO = this.lineBusBO.getLineByName(updateBusDTO.getLineBus().getLineName()).getBody();
+        if (!Objects.equals(updateBusDTO.getLineBus().getLineName(), bus.getLineBus().getLineName())) {
 
+            if (lineBusDTO == null) {
+                CreateLineBusDTO createLineBusDTO = new CreateLineBusDTO();
+                createLineBusDTO.setLineName(updateBusDTO.getLineBus().getLineName());
+                lineBusDTO = lineBusBO.create(createLineBusDTO).getBody();
+            }
             updateBusDTO.setLineBus(lineBusDTO);
         }
+        BeanUtils.copyProperties(lineBusDTO, lineBus1);
 
+        bus.setLineBus(lineBus1);
         //Colocando os valores de userDTO em user
         BeanUtils.copyProperties(updateBusDTO, bus);
-
 
         BeanUtils.copyProperties(this.busDAO.save(bus), busReturn);
 
@@ -95,7 +102,7 @@ public class BusBOImpl implements BusBO {
 
     //Método que irá deletar o onibus
     @Override
-    public ResponseEntity<String> delete(Long busId) {
+    public ResponseEntity<String> delete(Long busId, UsersBO userBO) {
         UserDTO user = userBO.me();
 
         //Verificando se existe algum onibus com esse id
@@ -124,7 +131,7 @@ public class BusBOImpl implements BusBO {
 
     //Método que retorna os onibus criados pelo usuario
     @Override
-    public ResponseEntity<List<BusDTO>> findBusForUser(Long userId) {
+    public ResponseEntity<List<BusDTO>> findBusForUser(Long userId, UsersBO userBO) {
         List<BusDTO> busReturn;
         UserDTO user = userBO.me();
 

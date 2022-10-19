@@ -95,10 +95,15 @@ public class UserBOImpl implements UsersBO {
 
         User user = new User();
         UserDTO userReturn = new UserDTO();
+        PermissionsGroupDTO permissionsGroupDTO = permissionsGroupBO.findByName(UserRoles.DEFAULT).getBody();
+        PermissionsGroup permissionsGroup = new PermissionsGroup();
+
+        assert permissionsGroupDTO != null;
+        BeanUtils.copyProperties(permissionsGroupDTO, permissionsGroup);
 
         //Colocando os valores de userDTO em user
         BeanUtils.copyProperties(userDTO, userReturn);
-        userReturn.setPermissionsGroup(permissionsGroupBO.findByName(UserRoles.DEFAULT).getBody());
+        userReturn.setPermissionsGroup(permissionsGroup);
 
         BeanUtils.copyProperties(userReturn, user);
 
@@ -138,11 +143,13 @@ public class UserBOImpl implements UsersBO {
     public ResponseEntity<UserDTO> setAdminUser(Long userId, UpdatePermissionDTO updatePermissionDTO) {
         UserDTO user = findById(userId);
         PermissionsGroupDTO permissionsGroupDTO = permissionsGroupBO.findByName(UserRoles.DEFAULT).getBody();
-        
+        PermissionsGroup permissionsGroup = new PermissionsGroup();
+
         if (permissionsGroupDTO == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
-        user.setPermissionsGroup(permissionsGroupDTO);
+        BeanUtils.copyProperties(permissionsGroupDTO, permissionsGroup);
+        user.setPermissionsGroup(permissionsGroup);
 
         User userSave = new User();
 
@@ -158,16 +165,20 @@ public class UserBOImpl implements UsersBO {
     @Override
     public ResponseEntity<List<BusDTO>> favoriteBus(Long busId, Long userId) {
         UserDTO currentUser = me();
-        
+
         if (!Objects.equals(currentUser.getId(), userId)) {
 
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         UserDTO user = findById(userId);
 
-        BusDTO bus = busBO.getById(busId).getBody();
+        BusDTO busDTO = busBO.getById(busId).getBody();
+        Bus bus = new Bus();
 
-        List<BusDTO> busList = user.getFavoriteBus();
+        List<Bus> busList = user.getFavoriteBus();
+        BeanUtils.copyProperties(busDTO, bus);
+
+
         if (busList.contains(bus))
             return ResponseEntity.status(HttpStatus.ACCEPTED).build();
 
@@ -180,7 +191,15 @@ public class UserBOImpl implements UsersBO {
         BeanUtils.copyProperties(user, userSave);
         userDAO.save(userSave);
 
-        return ResponseEntity.ok(busList);
+        List<BusDTO> busListDTO = busList.stream().map(busMap -> {
+            BusDTO busDTO1 = new BusDTO();
+
+            BeanUtils.copyProperties(busMap, busDTO1);
+
+            return busDTO1;
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(busListDTO);
     }
 
     //Método que desfavorita um onibus
@@ -195,7 +214,7 @@ public class UserBOImpl implements UsersBO {
         UserDTO user = findById(userId);
         BusDTO busDTO = busBO.getById(busId).getBody();
 
-        List<BusDTO> busList = user.getFavoriteBus();
+        List<Bus> busList = user.getFavoriteBus();
 
 
         if (!busList.contains(busDTO))
@@ -205,14 +224,21 @@ public class UserBOImpl implements UsersBO {
         busList.remove(busDTO);
         user.setFavoriteBus(busList);
 
+        List<BusDTO> busListDTO = busList.stream().map(busMap -> {
+            BusDTO busDTO1 = new BusDTO();
 
+            BeanUtils.copyProperties(busMap, busDTO1);
+
+            return busDTO1;
+        }).collect(Collectors.toList());
+        
         User userSave = new User();
 
         BeanUtils.copyProperties(user, userSave);
         userDAO.save(userSave);
 
 
-        return ResponseEntity.ok(busList);
+        return ResponseEntity.ok(busListDTO);
     }
 
     //Método que irá logar o usuário

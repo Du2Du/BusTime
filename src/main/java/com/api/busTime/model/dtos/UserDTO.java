@@ -30,10 +30,10 @@ public class UserDTO {
     private Long id;
 
     @NotNull
-    private PermissionsGroupDTO permissionsGroup;
+    private PermissionsGroup permissionsGroup;
 
     @NotNull
-    private List<BusDTO> favoriteBus;
+    private List<Bus> favoriteBus;
 
     @Override
     public String toString() {

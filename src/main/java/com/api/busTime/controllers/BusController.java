@@ -1,12 +1,11 @@
 package com.api.busTime.controllers;
 
+import com.api.busTime.model.bo.BusBO;
+import com.api.busTime.model.bo.UsersBO;
 import com.api.busTime.model.dtos.BusDTO;
-import com.api.busTime.model.dtos.LineBusDTO;
 import com.api.busTime.model.dtos.CreateBusDTO;
 import com.api.busTime.model.dtos.UpdateBusDTO;
-import com.api.busTime.model.bo.BusBO;
 import com.api.busTime.utils.AdminVerify;
-import com.api.busTime.utils.ValidationType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,7 +21,10 @@ import java.util.List;
 public class BusController {
 
     @Autowired
-    private final BusBO busBO;
+    private BusBO busBO;
+
+    @Autowired
+    private UsersBO userBO;
     
 
     public BusController(BusBO busBO) {
@@ -36,7 +38,7 @@ public class BusController {
 
     @GetMapping("/user/{id}")
     public ResponseEntity<List<BusDTO>> findBusForUser(@PathVariable Long id) {
-        return this.busBO.findBusForUser(id);
+        return this.busBO.findBusForUser(id, userBO);
     }
 
     @GetMapping("/line")
@@ -54,13 +56,13 @@ public class BusController {
     @AdminVerify
     @PutMapping("/{id}")
     public ResponseEntity<BusDTO> update(@PathVariable Long id, @RequestBody @Validated UpdateBusDTO updateBusDTO) {
-        return this.busBO.update(id, updateBusDTO);
+        return this.busBO.update(id, updateBusDTO, userBO);
     }
 
     @AdminVerify
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
-        return this.busBO.delete(id);
+        return this.busBO.delete(id, userBO);
     }
 
     @GetMapping
