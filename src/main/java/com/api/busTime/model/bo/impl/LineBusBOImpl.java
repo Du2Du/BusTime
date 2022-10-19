@@ -73,14 +73,4 @@ public class LineBusBOImpl implements LineBusBO {
 
         return ResponseEntity.ok(lineBusDTO);
     }
-
-    //Método que retorna a quantidade de onibus criados em um mes
-//    @Override
-//    public ResponseEntity<List<LineBusDTO>> listBusStatistics() {
-//
-//
-//        List<LineBusDTO> lineBusDTOS;
-//
-//        return ResponseEntity.ok(lineBusDTOS);
-//    }
 }

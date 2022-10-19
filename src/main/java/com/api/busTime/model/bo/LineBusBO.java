@@ -17,6 +17,4 @@ public interface LineBusBO {
     
     ResponseEntity<LineBusDTO> getLineByName(String lineName);
     
-//    ResponseEntity<List<LineBusDTO>> listBusStatistics();
-
 }

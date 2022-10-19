@@ -17,7 +17,9 @@ public interface BusDAO extends PagingAndSortingRepository<Bus, Long> {
     @Query("SELECT b FROM Bus b ORDER BY b.createAt DESC")
     Page<Bus> listForDate(Pageable pageable);
 
-    @Query("SELECT b FROM Bus b WHERE b.lineBus.lineName = ?1")
+    
+    
+    @Query("SELECT b FROM Bus b INNER JOIN LineBus l ON b.lineBus.id = l.id WHERE lower(l.lineName) = lower (?1)")
     Page<Bus> listBusForLine(String line, Pageable pageable);
 
     @Query("SELECT b FROM Bus b WHERE b.busNumber = ?1")

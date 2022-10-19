@@ -175,4 +175,10 @@ public class BusBOImpl implements BusBO {
         return busReturn;
     }
 
+    @Override
+    public ResponseEntity<List<StatisticsDTO>> listBusStatistics() {
+        
+        
+        return null;
+    }
 }

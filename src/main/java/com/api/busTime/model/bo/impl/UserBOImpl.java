@@ -141,8 +141,8 @@ public class UserBOImpl implements UsersBO {
     //Método que atualiza o atributo isAdmin de um usuario
     @Override
     public ResponseEntity<UserDTO> setAdminUser(Long userId, UpdatePermissionDTO updatePermissionDTO) {
-        UserDTO user = findById(userId);
-        PermissionsGroupDTO permissionsGroupDTO = permissionsGroupBO.findByName(UserRoles.DEFAULT).getBody();
+        User user = userDAO.getById(userId);
+        PermissionsGroupDTO permissionsGroupDTO = permissionsGroupBO.findByName(updatePermissionDTO.getPermissionGroup()).getBody();
         PermissionsGroup permissionsGroup = new PermissionsGroup();
 
         if (permissionsGroupDTO == null)
@@ -151,12 +151,12 @@ public class UserBOImpl implements UsersBO {
         BeanUtils.copyProperties(permissionsGroupDTO, permissionsGroup);
         user.setPermissionsGroup(permissionsGroup);
 
-        User userSave = new User();
+        UserDTO userSave = new UserDTO();
 
         BeanUtils.copyProperties(user, userSave);
-        userDAO.save(userSave);
+        userDAO.save(user);
 
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(userSave);
 
 
     }
@@ -337,12 +337,14 @@ public class UserBOImpl implements UsersBO {
 
         if (!currentUser.getId().equals(userId)) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 
-        UserDTO userDTO = findById(userId);
-        User user = new User();
+        User user = userDAO.getById(userId);
+        UserDTO userDTO = new UserDTO();
 
 
         //Colocando os valores de updateUserDTO em user
         BeanUtils.copyProperties(updateUserDTO, userDTO);
+        userDTO.setPermissionsGroup(user.getPermissionsGroup());
+        userDTO.setFavoriteBus(user.getFavoriteBus());
         BeanUtils.copyProperties(userDTO, user);
         this.userDAO.save(user);
 
