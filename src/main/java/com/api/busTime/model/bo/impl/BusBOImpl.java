@@ -58,9 +58,7 @@ public class BusBOImpl implements BusBO {
 
         //Colocando os valores de userDTO em user
         BeanUtils.copyProperties(createBusDTO, bus);
-
-        System.out.println(bus.toString());
-
+        
         BeanUtils.copyProperties(this.busDAO.save(bus), busReturn);
 
         return ResponseEntity.ok(busReturn);
