@@ -182,13 +182,8 @@ public class BusBOImpl implements BusBO {
 
     //Método que favorita um onibus
     @Override
-    public ResponseEntity<List<BusDTO>> favoriteBus(Long busId, Long userId) {
-        UserDTO currentUser = userBO.me();
-
-        if (!Objects.equals(currentUser.getId(), userId))
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-
-        UserDTO user = userBO.findById(userId);
+    public ResponseEntity<List<BusDTO>> favoriteBus(Long busId) {
+        UserDTO user = userBO.me();
 
         BusDTO busDTO = getById(busId).getBody();
         Bus bus = new Bus();
@@ -201,7 +196,7 @@ public class BusBOImpl implements BusBO {
 
         busList.add(bus);
 
-        userBO.updateFavoriteBus(userId, busList);
+        userBO.updateFavoriteBus(user.getId(), busList);
 
         List<BusDTO> busListDTO = busList.stream().map(busMap -> {
             BusDTO busDTO1 = new BusDTO();
@@ -216,8 +211,10 @@ public class BusBOImpl implements BusBO {
 
     //Método que desfavorita um onibus
     @Override
-    public ResponseEntity<List<BusDTO>> desfavoriteBus(Long busId, Long userId) {
+    public ResponseEntity<List<BusDTO>> desfavoriteBus(Long busId) {
         UserDTO currenUser = userBO.me();
+
+        Long userId = currenUser.getId();
 
         if (!Objects.equals(currenUser.getId(), userId))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -256,7 +253,13 @@ public class BusBOImpl implements BusBO {
     public ResponseEntity<List<StatisticsDTO>> listBusStatistics() {
         List<LineBusDTO> lineBusDTOList = this.lineBusBO.listAll().getBody();
 
+        List<StatisticsDTO> statisticsDTOList = lineBusDTOList.stream().map(line -> {
+            int savedQuantity = this.busDAO.listLineBusFavorited(line.getId());
+            StatisticsDTO statisticsDTO = new StatisticsDTO(savedQuantity, line.getLineName());
+            
+            return statisticsDTO;
+        }).collect(Collectors.toList());
 
-        return null;
+        return ResponseEntity.ok(statisticsDTOList);
     }
 }

@@ -4,8 +4,10 @@ import com.api.busTime.model.bo.BusBO;
 import com.api.busTime.model.bo.UsersBO;
 import com.api.busTime.model.dtos.BusDTO;
 import com.api.busTime.model.dtos.CreateBusDTO;
+import com.api.busTime.model.dtos.StatisticsDTO;
 import com.api.busTime.model.dtos.UpdateBusDTO;
 import com.api.busTime.utils.AdminVerify;
+import com.api.busTime.utils.ValidationType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -67,18 +69,18 @@ public class BusController {
     }
 
     @GetMapping("/favorite/{id}")
-    public ResponseEntity<List<BusDTO>> favoriteBus(@PathVariable("id") Long userId, @RequestParam("bus") Long busId) {
-        return this.busBO.favoriteBus(busId, userId);
+    public ResponseEntity<List<BusDTO>> favoriteBus(@PathVariable("id") Long busId) {
+        return this.busBO.favoriteBus(busId);
     }
 
     @GetMapping("/desfavorite/{id}")
-    public ResponseEntity<List<BusDTO>> desfavoriteBus(@PathVariable("id") Long userId, @RequestParam("bus") Long busId) {
-        return this.busBO.desfavoriteBus(busId, userId);
+    public ResponseEntity<List<BusDTO>> desfavoriteBus(@PathVariable("id") Long busId) {
+        return this.busBO.desfavoriteBus(busId);
     }
 
-//    @AdminVerify(validationType = ValidationType.SUPER_ADMIN)
-//    @GetMapping
-//    public ResponseEntity<List<StatisticsDTO>> listLineStatistics() {
-//        return this.busBO.listBusStatistics();
-//    }
+    @AdminVerify(validationType = ValidationType.SUPER_ADMIN)
+    @GetMapping("/statistics")
+    public ResponseEntity<List<StatisticsDTO>> listLineStatistics() {
+        return this.busBO.listBusStatistics();
+    }
 }

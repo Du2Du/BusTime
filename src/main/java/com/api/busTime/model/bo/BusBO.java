@@ -22,9 +22,9 @@ public interface BusBO {
     Page<BusDTO> listBusForLine(String line, Pageable pageable);
 
     ResponseEntity<String> delete(Long busId);
-    ResponseEntity<List<BusDTO>> favoriteBus(Long busId, Long userId);
+    ResponseEntity<List<BusDTO>> favoriteBus(Long busId);
 
-    ResponseEntity<List<BusDTO>> desfavoriteBus(Long busId, Long userId);
+    ResponseEntity<List<BusDTO>> desfavoriteBus(Long busId);
     
     ResponseEntity<List<StatisticsDTO>> listBusStatistics();
 
