@@ -51,6 +51,11 @@ public class UserController {
     public ResponseEntity<UserDTO> setAdminUser(@PathVariable("id") Long userId, @RequestBody @Validated UpdatePermissionDTO updatePermissionDTO) {
         return this.usersBO.setAdminUser(userId, updatePermissionDTO);
     }
+    
+    @GetMapping("/favorite-buses")
+    public ResponseEntity<List<BusDTO>> listFavoriteBuses(){
+        return this.usersBO.listFavoriteBuses();
+    }
 
     @PutMapping("/{id}")
     public ResponseEntity<UserDTO> update(@PathVariable Long id, @RequestBody @Validated UpdateUserDTO updateUserDTO) {

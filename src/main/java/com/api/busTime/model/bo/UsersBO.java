@@ -30,4 +30,6 @@ public interface UsersBO {
     ResponseEntity<LoginResponse> login(LoginRequest loginRequest, String accessToken, String refreshToken);
 
     ResponseEntity<LoginResponse> refresh(String accessToken, String refreshToken);
+    
+    ResponseEntity<List<BusDTO>> listFavoriteBuses();
 }

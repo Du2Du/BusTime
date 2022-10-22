@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserBOImpl implements UsersBO {
@@ -290,5 +291,19 @@ public class UserBOImpl implements UsersBO {
         BeanUtils.copyProperties(userDAO.save(user), userDTO);
         
         return ResponseEntity.ok(userDTO);
+    }
+
+    @Override
+    public ResponseEntity<List<BusDTO>> listFavoriteBuses() {
+        UserDTO user = me();
+        List<BusDTO> busDTOList = user.getFavoriteBus().stream().map(bus -> {
+            BusDTO busDTO = new BusDTO();
+            
+            BeanUtils.copyProperties(bus, busDTO);
+            
+            return busDTO;
+        }).collect(Collectors.toList());
+        
+        return ResponseEntity.ok(busDTOList);
     }
 }
