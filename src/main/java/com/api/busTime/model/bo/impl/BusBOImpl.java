@@ -259,7 +259,7 @@ public class BusBOImpl implements BusBO {
             StatisticsDTO statisticsDTO = new StatisticsDTO(savedQuantity, line.getLineName());
             
             return statisticsDTO;
-        }).filter(lineBus -> lineBus !null).collect(Collectors.toList());
+        }).filter(lineBus -> lineBus != null).collect(Collectors.toList());
 
         return ResponseEntity.ok(statisticsDTOList);
     }
