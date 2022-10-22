@@ -19,15 +19,13 @@ public interface UsersBO {
     
     ResponseEntity<UserDTO> setAdminUser(Long userId,  UpdatePermissionDTO updatePermissionDTO);
 
-    ResponseEntity<List<BusDTO>> favoriteBus(Long busId, Long userId);
-
-    ResponseEntity<List<BusDTO>> desfavoriteBus(Long busId, Long userId);
-
     UserDTO me();
 
     ResponseEntity<String> delete(Long id);
 
     ResponseEntity<UserDTO> update(Long id, UpdateUserDTO updateUserDTO);
+    
+    ResponseEntity<UserDTO> updateFavoriteBus(Long userId, List<Bus> busList);
 
     ResponseEntity<LoginResponse> login(LoginRequest loginRequest, String accessToken, String refreshToken);
 

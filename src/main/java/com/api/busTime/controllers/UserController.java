@@ -46,20 +46,10 @@ public class UserController {
         return this.usersBO.create(createUserDTO);
     }
 
-    @GetMapping("/favorite-bus/{id}")
-    public ResponseEntity<List<BusDTO>> favoriteBus(@PathVariable("id") Long userId, @RequestParam("bus") Long busId) {
-        return this.usersBO.favoriteBus(busId, userId);
-    }
-
     @AdminVerify(validationType = ValidationType.SUPER_ADMIN)
     @PutMapping("/change-admin/{id}")
     public ResponseEntity<UserDTO> setAdminUser(@PathVariable("id") Long userId, @RequestBody @Validated UpdatePermissionDTO updatePermissionDTO) {
         return this.usersBO.setAdminUser(userId, updatePermissionDTO);
-    }
-
-    @GetMapping("/desfavorite-bus/{id}")
-    public ResponseEntity<List<BusDTO>> desfavoriteBus(@PathVariable("id") Long userId, @RequestParam("bus") Long busId) {
-        return this.usersBO.desfavoriteBus(busId, userId);
     }
 
     @PutMapping("/{id}")

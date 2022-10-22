@@ -9,6 +9,7 @@ import com.api.busTime.model.dao.LineBusDAO;
 import com.api.busTime.model.dtos.*;
 import com.api.busTime.model.entities.Bus;
 import com.api.busTime.model.entities.LineBus;
+import com.api.busTime.model.entities.User;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -28,6 +29,9 @@ public class BusBOImpl implements BusBO {
 
     @Autowired
     private LineBusBO lineBusBO;
+
+    @Autowired
+    private UsersBO userBO;
 
     public boolean findBusWithNumber(Integer busNumber) {
         Optional<Bus> bus = this.busDAO.listBusForNumber(busNumber);
@@ -58,7 +62,7 @@ public class BusBOImpl implements BusBO {
 
         //Colocando os valores de userDTO em user
         BeanUtils.copyProperties(createBusDTO, bus);
-        
+
         BeanUtils.copyProperties(this.busDAO.save(bus), busReturn);
 
         return ResponseEntity.ok(busReturn);
@@ -66,7 +70,7 @@ public class BusBOImpl implements BusBO {
 
     //Método que atualiza as informações do onibus
     @Override
-    public ResponseEntity<BusDTO> update(Long busId, UpdateBusDTO updateBusDTO, UsersBO userBO) {
+    public ResponseEntity<BusDTO> update(Long busId, UpdateBusDTO updateBusDTO) {
         UserDTO user = userBO.me();
 
         //Verificando se existe algum onibus com esse id
@@ -100,7 +104,7 @@ public class BusBOImpl implements BusBO {
 
     //Método que irá deletar o onibus
     @Override
-    public ResponseEntity<String> delete(Long busId, UsersBO userBO) {
+    public ResponseEntity<String> delete(Long busId) {
         UserDTO user = userBO.me();
 
         //Verificando se existe algum onibus com esse id
@@ -129,7 +133,7 @@ public class BusBOImpl implements BusBO {
 
     //Método que retorna os onibus criados pelo usuario
     @Override
-    public ResponseEntity<List<BusDTO>> findBusForUser(Long userId, UsersBO userBO) {
+    public ResponseEntity<List<BusDTO>> findBusForUser(Long userId) {
         List<BusDTO> busReturn;
         UserDTO user = userBO.me();
 
@@ -175,10 +179,84 @@ public class BusBOImpl implements BusBO {
         return busReturn;
     }
 
+
+    //Método que favorita um onibus
+    @Override
+    public ResponseEntity<List<BusDTO>> favoriteBus(Long busId, Long userId) {
+        UserDTO currentUser = userBO.me();
+
+        if (!Objects.equals(currentUser.getId(), userId))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+        UserDTO user = userBO.findById(userId);
+
+        BusDTO busDTO = getById(busId).getBody();
+        Bus bus = new Bus();
+
+        List<Bus> busList = user.getFavoriteBus();
+        BeanUtils.copyProperties(busDTO, bus);
+
+        if (busList.contains(bus))
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+
+        busList.add(bus);
+
+        userBO.updateFavoriteBus(userId, busList);
+
+        List<BusDTO> busListDTO = busList.stream().map(busMap -> {
+            BusDTO busDTO1 = new BusDTO();
+
+            BeanUtils.copyProperties(busMap, busDTO1);
+
+            return busDTO1;
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(busListDTO);
+    }
+
+    //Método que desfavorita um onibus
+    @Override
+    public ResponseEntity<List<BusDTO>> desfavoriteBus(Long busId, Long userId) {
+        UserDTO currenUser = userBO.me();
+
+        if (!Objects.equals(currenUser.getId(), userId))
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+
+        UserDTO user = userBO.findById(userId);
+        BusDTO busDTO = getById(busId).getBody();
+
+        List<Bus> busList = user.getFavoriteBus();
+        List<Bus> verifyBusInList = busList.stream().filter(bus ->
+                bus.getId().equals(busDTO.getId())
+        ).collect(Collectors.toList());
+
+
+        if (verifyBusInList.size() == 0)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        busList.remove(verifyBusInList.get(0));
+        userBO.updateFavoriteBus(userId, busList);
+
+        List<BusDTO> busListDTO = busList.stream().map(busMap -> {
+            BusDTO busDTO1 = new BusDTO();
+
+            BeanUtils.copyProperties(busMap, busDTO1);
+
+            return busDTO1;
+        }).collect(Collectors.toList());
+
+        User userSave = new User();
+
+        BeanUtils.copyProperties(user, userSave);
+
+        return ResponseEntity.ok(busListDTO);
+    }
+
     @Override
     public ResponseEntity<List<StatisticsDTO>> listBusStatistics() {
-        
-        
+        List<LineBusDTO> lineBusDTOList = this.lineBusBO.listAll().getBody();
+
+
         return null;
     }
 }

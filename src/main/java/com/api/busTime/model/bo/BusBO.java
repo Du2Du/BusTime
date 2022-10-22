@@ -13,16 +13,19 @@ public interface BusBO {
 
     ResponseEntity<BusDTO> create(CreateBusDTO createBusDTO);
 
-    ResponseEntity<BusDTO> update(Long busId, UpdateBusDTO updateBusDTO, UsersBO userBO);
+    ResponseEntity<BusDTO> update(Long busId, UpdateBusDTO updateBusDTO);
 
-    ResponseEntity<List<BusDTO>> findBusForUser(Long userId, UsersBO userBO);
+    ResponseEntity<List<BusDTO>> findBusForUser(Long userId);
 
     Page<BusDTO> listAll(Pageable pageable);
 
     Page<BusDTO> listBusForLine(String line, Pageable pageable);
 
-    ResponseEntity<String> delete(Long busId, UsersBO userBO);
+    ResponseEntity<String> delete(Long busId);
+    ResponseEntity<List<BusDTO>> favoriteBus(Long busId, Long userId);
 
+    ResponseEntity<List<BusDTO>> desfavoriteBus(Long busId, Long userId);
+    
     ResponseEntity<List<StatisticsDTO>> listBusStatistics();
 
 }

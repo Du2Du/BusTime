@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface LineBusBO {
 
-    ResponseEntity<LineBusDTO> getById(Long lineId);
+    ResponseEntity<List<LineBusDTO>> listAll();
 
     ResponseEntity<LineBusDTO> create(CreateLineBusDTO lineBusDTO);
 

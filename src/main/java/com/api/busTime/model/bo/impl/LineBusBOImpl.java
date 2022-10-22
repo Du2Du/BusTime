@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -52,16 +53,6 @@ public class LineBusBOImpl implements LineBusBO {
     }
 
     @Override
-    public ResponseEntity<LineBusDTO> getById(Long lineId) {
-        LineBus lineBus = this.lineDAO.findById(lineId).orElseThrow(() -> new ResourceNotFoundException("Linha não encontrada."));
-
-        LineBusDTO lineBusDTO = new LineBusDTO();
-        BeanUtils.copyProperties(lineBus, lineBusDTO);
-
-        return ResponseEntity.ok(lineBusDTO);
-    }
-
-    @Override
     public ResponseEntity<LineBusDTO> getLineByName(String lineName) {
         Optional<LineBus> lineBus = this.lineDAO.findLineForName(lineName);
 
@@ -72,5 +63,19 @@ public class LineBusBOImpl implements LineBusBO {
         BeanUtils.copyProperties(lineBus.get(), lineBusDTO);
 
         return ResponseEntity.ok(lineBusDTO);
+    }
+
+    @Override
+    public ResponseEntity<List<LineBusDTO>> listAll() {
+        List<LineBus> listLineBus = this.lineDAO.findAll();
+        List<LineBusDTO> lineBusDTOList = listLineBus.stream().map(lineBus -> {
+            LineBusDTO lineBusDTO = new LineBusDTO();
+            
+            BeanUtils.copyProperties(lineBus, lineBusDTO);
+            
+            return lineBusDTO;
+        }).collect(Collectors.toList());
+        
+        return ResponseEntity.ok(lineBusDTOList);
     }
 }

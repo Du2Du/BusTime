@@ -2,9 +2,10 @@ package com.api.busTime.controllers;
 
 import com.api.busTime.model.bo.BusBO;
 import com.api.busTime.model.bo.UsersBO;
-import com.api.busTime.model.dtos.*;
+import com.api.busTime.model.dtos.BusDTO;
+import com.api.busTime.model.dtos.CreateBusDTO;
+import com.api.busTime.model.dtos.UpdateBusDTO;
 import com.api.busTime.utils.AdminVerify;
-import com.api.busTime.utils.ValidationType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,10 +23,6 @@ public class BusController {
     @Autowired
     private BusBO busBO;
 
-    @Autowired
-    private UsersBO userBO;
-    
-
     public BusController(BusBO busBO) {
         this.busBO = busBO;
     }
@@ -37,7 +34,7 @@ public class BusController {
 
     @GetMapping("/user/{id}")
     public ResponseEntity<List<BusDTO>> findBusForUser(@PathVariable Long id) {
-        return this.busBO.findBusForUser(id, userBO);
+        return this.busBO.findBusForUser(id);
     }
 
     @GetMapping("/line")
@@ -55,13 +52,13 @@ public class BusController {
     @AdminVerify
     @PutMapping("/{id}")
     public ResponseEntity<BusDTO> update(@PathVariable Long id, @RequestBody @Validated UpdateBusDTO updateBusDTO) {
-        return this.busBO.update(id, updateBusDTO, userBO);
+        return this.busBO.update(id, updateBusDTO);
     }
 
     @AdminVerify
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
-        return this.busBO.delete(id, userBO);
+        return this.busBO.delete(id);
     }
 
     @GetMapping
@@ -69,9 +66,19 @@ public class BusController {
         return this.busBO.listAll(pageable);
     }
 
-    @AdminVerify(validationType = ValidationType.SUPER_ADMIN)
-    @GetMapping
-    public ResponseEntity<List<StatisticsDTO>> listLineStatistics() {
-        return this.busBO.listBusStatistics();
+    @GetMapping("/favorite/{id}")
+    public ResponseEntity<List<BusDTO>> favoriteBus(@PathVariable("id") Long userId, @RequestParam("bus") Long busId) {
+        return this.busBO.favoriteBus(busId, userId);
     }
+
+    @GetMapping("/desfavorite/{id}")
+    public ResponseEntity<List<BusDTO>> desfavoriteBus(@PathVariable("id") Long userId, @RequestParam("bus") Long busId) {
+        return this.busBO.desfavoriteBus(busId, userId);
+    }
+
+//    @AdminVerify(validationType = ValidationType.SUPER_ADMIN)
+//    @GetMapping
+//    public ResponseEntity<List<StatisticsDTO>> listLineStatistics() {
+//        return this.busBO.listBusStatistics();
+//    }
 }

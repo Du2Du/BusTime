@@ -2,17 +2,18 @@ package com.api.busTime.model.bo.impl;
 
 import com.api.busTime.exceptions.EntityExistsException;
 import com.api.busTime.exceptions.ResourceNotFoundException;
-import com.api.busTime.model.bo.*;
-import com.api.busTime.model.dao.BusDAO;
-import com.api.busTime.model.dao.LineBusDAO;
-import com.api.busTime.model.dao.PermissionsGroupDAO;
+import com.api.busTime.model.bo.PermissionsBO;
+import com.api.busTime.model.bo.TokenProvider;
+import com.api.busTime.model.bo.UsersBO;
 import com.api.busTime.model.dao.UserDAO;
 import com.api.busTime.model.dtos.*;
-import com.api.busTime.model.entities.*;
+import com.api.busTime.model.entities.Bus;
+import com.api.busTime.model.entities.PermissionsGroup;
+import com.api.busTime.model.entities.User;
+import com.api.busTime.model.entities.UserRoles;
 import com.api.busTime.utils.CookieUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -25,21 +26,13 @@ import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class UserBOImpl implements UsersBO {
 
     @Autowired
     private UserDAO userDAO;
-
-    @Autowired
-    private BusBO busBO;
-
-    @Autowired
-    private LineBusBO lineBusBO;
 
     @Autowired
     private PermissionsBO permissionsGroupBO;
@@ -159,86 +152,6 @@ public class UserBOImpl implements UsersBO {
         return ResponseEntity.ok(userSave);
 
 
-    }
-
-    //Método que favorita um onibus
-    @Override
-    public ResponseEntity<List<BusDTO>> favoriteBus(Long busId, Long userId) {
-        UserDTO currentUser = me();
-
-        if (!Objects.equals(currentUser.getId(), userId)) {
-
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        UserDTO user = findById(userId);
-
-        BusDTO busDTO = busBO.getById(busId).getBody();
-        Bus bus = new Bus();
-
-        List<Bus> busList = user.getFavoriteBus();
-        BeanUtils.copyProperties(busDTO, bus);
-
-
-        if (busList.contains(bus))
-            return ResponseEntity.status(HttpStatus.ACCEPTED).build();
-
-        busList.add(bus);
-
-        user.setFavoriteBus(busList);
-
-        User userSave = new User();
-
-        BeanUtils.copyProperties(user, userSave);
-        userDAO.save(userSave);
-
-        List<BusDTO> busListDTO = busList.stream().map(busMap -> {
-            BusDTO busDTO1 = new BusDTO();
-
-            BeanUtils.copyProperties(busMap, busDTO1);
-
-            return busDTO1;
-        }).collect(Collectors.toList());
-
-        return ResponseEntity.ok(busListDTO);
-    }
-
-    //Método que desfavorita um onibus
-    @Override
-    public ResponseEntity<List<BusDTO>> desfavoriteBus(Long busId, Long userId) {
-        UserDTO currenUser = me();
-
-        if (!Objects.equals(currenUser.getId(), userId))
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-
-
-        UserDTO user = findById(userId);
-        BusDTO busDTO = busBO.getById(busId).getBody();
-
-        List<Bus> busList = user.getFavoriteBus();
-
-
-        if (!busList.contains(busDTO))
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-
-
-        busList.remove(busDTO);
-        user.setFavoriteBus(busList);
-
-        List<BusDTO> busListDTO = busList.stream().map(busMap -> {
-            BusDTO busDTO1 = new BusDTO();
-
-            BeanUtils.copyProperties(busMap, busDTO1);
-
-            return busDTO1;
-        }).collect(Collectors.toList());
-        
-        User userSave = new User();
-
-        BeanUtils.copyProperties(user, userSave);
-        userDAO.save(userSave);
-
-
-        return ResponseEntity.ok(busListDTO);
     }
 
     //Método que irá logar o usuário
@@ -363,5 +276,19 @@ public class UserBOImpl implements UsersBO {
 
         this.userDAO.delete(user);
         return ResponseEntity.ok("Usuário Deletado com sucesso");
+    }
+
+    @Override
+    public ResponseEntity<UserDTO> updateFavoriteBus(Long userId, List<Bus> busList) {
+
+        User user = userDAO.getById(userId);
+        UserDTO userDTO = new UserDTO();
+        
+        user.setFavoriteBus(busList);
+        userDTO.setFavoriteBus(busList);
+        
+        BeanUtils.copyProperties(userDAO.save(user), userDTO);
+        
+        return ResponseEntity.ok(userDTO);
     }
 }
