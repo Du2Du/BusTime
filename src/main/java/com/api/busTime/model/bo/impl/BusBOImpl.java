@@ -255,10 +255,11 @@ public class BusBOImpl implements BusBO {
 
         List<StatisticsDTO> statisticsDTOList = lineBusDTOList.stream().map(line -> {
             int savedQuantity = this.busDAO.listLineBusFavorited(line.getId());
+            if(savedQuantity == 0)return null;
             StatisticsDTO statisticsDTO = new StatisticsDTO(savedQuantity, line.getLineName());
             
             return statisticsDTO;
-        }).collect(Collectors.toList());
+        }).filter(lineBus -> lineBus !null).collect(Collectors.toList());
 
         return ResponseEntity.ok(statisticsDTOList);
     }
