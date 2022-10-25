@@ -227,7 +227,6 @@ public class BusBOImpl implements BusBO {
                 bus.getId().equals(busDTO.getId())
         ).collect(Collectors.toList());
 
-
         if (verifyBusInList.size() == 0)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
