@@ -16,12 +16,6 @@ import java.util.Date;
 public class UpdateUserDTO {
     @NotBlank
     private String name;
-    private Boolean isAdmin;
-    @NotBlank
-    @NotBlank
-    @CPF
-    private String cpf;
-    @NotBlank
     @Email
     private String email;
     @NotNull

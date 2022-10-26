@@ -1,12 +1,17 @@
 package com.api.busTime.controllers;
 
+import com.api.busTime.model.bo.BusBO;
+import com.api.busTime.model.bo.UsersBO;
+import com.api.busTime.model.dtos.BusDTO;
 import com.api.busTime.model.dtos.CreateBusDTO;
+import com.api.busTime.model.dtos.StatisticsDTO;
 import com.api.busTime.model.dtos.UpdateBusDTO;
-import com.api.busTime.model.entities.BusModel;
-import com.api.busTime.model.bo.BusService;
-import com.api.busTime.model.bo.UsersService;
+import com.api.busTime.utils.AdminVerify;
+import com.api.busTime.utils.ValidationType;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,46 +22,65 @@ import java.util.List;
 @RequestMapping("/api/v1/bus")
 public class BusController {
 
-    private final BusService busService;
-    
-    private final UsersService usersService;
+    @Autowired
+    private BusBO busBO;
 
-    public BusController(BusService busService, UsersService usersService) {
-        this.busService = busService; this.usersService = usersService;
+    public BusController(BusBO busBO) {
+        this.busBO = busBO;
     }
 
     @GetMapping("/{id}")
-    public BusModel getById(@PathVariable Long id){
-        return this.busService.getById(id);
-    }
-    
-    @GetMapping("/user/{id}")
-    public List<BusModel> findBusForUser(@PathVariable Long id){
-        return this.busService.findBusForUser(id);
-    }
-    @GetMapping("/line")
-    public Page<BusModel> listForLine(@RequestParam(name = "line") String line, Pageable pageable){
-        return this.busService.listForLine(line, pageable);
+    public ResponseEntity<BusDTO> getById(@PathVariable Long id) {
+        return this.busBO.getById(id);
     }
 
+    @GetMapping("/user/{id}")
+    public ResponseEntity<List<BusDTO>> findBusForUser(@PathVariable Long id) {
+        return this.busBO.findBusForUser(id);
+    }
+
+    @GetMapping("/line")
+    public Page<BusDTO> listBusForLine(@RequestParam(name = "line") String line, Pageable pageable) {
+        return this.busBO.listBusForLine(line, pageable);
+    }
+
+    @AdminVerify
     @PostMapping
-    public BusModel create(@RequestBody @Validated CreateBusDTO createBusDTO) {
-        return this.busService.create(createBusDTO);
-    } 
-    
+    public ResponseEntity<BusDTO> create(@RequestBody @Validated CreateBusDTO createBusDTO) {
+        
+        return this.busBO.create(createBusDTO);
+    }
+
+    @AdminVerify
     @PutMapping("/{id}")
-    public BusModel update(@PathVariable Long id, @RequestBody @Validated UpdateBusDTO updateBusDTO) {
-        return this.busService.update(id, updateBusDTO);
+    public ResponseEntity<BusDTO> update(@PathVariable Long id, @RequestBody @Validated UpdateBusDTO updateBusDTO) {
+        return this.busBO.update(id, updateBusDTO);
     }
-    
+
+    @AdminVerify
     @DeleteMapping("/{id}")
-    public String delete(@PathVariable Long id){
-        return this.busService.delete(id);
+    public ResponseEntity<String> delete(@PathVariable Long id) {
+        return this.busBO.delete(id);
     }
-    
+
     @GetMapping
-    public Page<BusModel> listAll(Pageable pageable){
-        return this.busService.listAll(pageable);
+    public Page<BusDTO> listAll(Pageable pageable) {
+        return this.busBO.listAll(pageable);
     }
-    
+
+    @GetMapping("/favorite/{id}")
+    public ResponseEntity<List<BusDTO>> favoriteBus(@PathVariable("id") Long busId) {
+        return this.busBO.favoriteBus(busId);
+    }
+
+    @GetMapping("/desfavorite/{id}")
+    public ResponseEntity<List<BusDTO>> desfavoriteBus(@PathVariable("id") Long busId) {
+        return this.busBO.desfavoriteBus(busId);
+    }
+
+    @AdminVerify(validationType = ValidationType.SUPER_ADMIN)
+    @GetMapping("/statistics")
+    public ResponseEntity<List<StatisticsDTO>> listLineStatistics() {
+        return this.busBO.listBusStatistics();
+    }
 }
