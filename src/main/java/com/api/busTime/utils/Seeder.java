@@ -38,15 +38,15 @@ public class Seeder implements CommandLineRunner {
 
     private void loadMenusData() {
         if (this.menuDAO.count() == 0) {
-            Menu profileMenu = new Menu(1L, "/profile", "CgProfile", "");
-            Menu statisticsMenu = new Menu(2L, "/statistics", "VscGraph", PermissionsEnum.VIEW_STATISTICS.getValue());
-            Menu logsMenu = new Menu(3L, "/logs", "AiOutlineAlignLeft", PermissionsEnum.VIEW_LOGS.getValue());
-            Menu permissionsMenu = new Menu(4L, "/permissions", "AiOutlineLock", PermissionsEnum.UPDATE_PERMISSION_USER.getValue());
-            Menu favoritesMenu = new Menu(5L, "/favorites", "AiOutlineHeart", "");
-            Menu homeMenu = new Menu(6L, "/home", "BiHomeAlt", "");
-            Menu createBusMenu = new Menu(7L, "/create-bus", "GiBusStop", PermissionsEnum.CREATE_BUS.getValue());
-            Menu busMenu = new Menu(8L, "/bus", "BiBusSchool", PermissionsEnum.CREATE_BUS.getValue());
-            Menu logoutMenu = new Menu(9L, "/logout", "BiDoorOpen", "");
+            Menu profileMenu = new Menu(1L, "/profile", "CgProfile", "Perfil", "");
+            Menu statisticsMenu = new Menu(2L, "/statistics", "VscGraph", "Estatísticas", PermissionsEnum.VIEW_STATISTICS.getValue());
+            Menu logsMenu = new Menu(3L, "/logs", "AiOutlineAlignLeft", "Logs", PermissionsEnum.VIEW_LOGS.getValue());
+            Menu permissionsMenu = new Menu(4L, "/permissions", "AiOutlineLock", "Permissões", PermissionsEnum.UPDATE_PERMISSION_USER.getValue());
+            Menu favoritesMenu = new Menu(5L, "/favorites", "AiOutlineHeart", "Favoritos", "");
+            Menu homeMenu = new Menu(6L, "/home", "BiHomeAlt", "Home", "");
+            Menu createBusMenu = new Menu(7L, "/create-bus", "GiBusStop", "Cadastrar", PermissionsEnum.CREATE_BUS.getValue());
+            Menu busMenu = new Menu(8L, "/bus", "BiBusSchool", "Ônibus", PermissionsEnum.CREATE_BUS.getValue());
+            Menu logoutMenu = new Menu(9L, "/logout", "BiDoorOpen", "Sair", "");
             
             List<Menu> menuList = new ArrayList<Menu>() {
                 {

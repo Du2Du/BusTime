@@ -12,7 +12,7 @@ public class MenuDTO {
     @NotBlank
     private String url;
     @NotBlank
-    private String iconName;
+    private String menuName;
     @NotBlank
-    private String permissionName;
+    private String iconName;
 }
