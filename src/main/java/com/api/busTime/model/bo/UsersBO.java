@@ -32,4 +32,6 @@ public interface UsersBO {
     ResponseEntity<LoginResponse> refresh(String accessToken, String refreshToken);
     
     ResponseEntity<List<BusDTO>> listFavoriteBuses();
+    
+    boolean verifyPermission(String permissionName);
 }
