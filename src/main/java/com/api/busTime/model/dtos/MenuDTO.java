@@ -1,6 +1,5 @@
 package com.api.busTime.model.dtos;
 
-import com.api.busTime.model.entities.UserRoles;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
@@ -15,5 +14,5 @@ public class MenuDTO {
     @NotBlank
     private String iconName;
     @NotBlank
-    private UserRoles permissionGroupName;
+    private String permissionName;
 }

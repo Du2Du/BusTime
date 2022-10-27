@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,26 +26,43 @@ public class Seeder implements CommandLineRunner {
 
     @Autowired
     private PermissionDAO permissionDAO;
-    
+
     @Autowired
     private MenuDAO menuDAO;
 
     @Override
     public void run(String... args) throws Exception {
+        loadMenusData();
         loadPermissionData();
     }
-    
-    private void loadMenusData(){
-        if(this.menuDAO.count() == 0){
-            Menu profileMenu = new Menu(null, "/profile", "CgProfile", "");
-            Menu statisticsMenu = new Menu(null, "/statistics", "VscGraph", );
-            Menu logsMenu = new Menu(null, "/logs", "AiOutlineAlignLeft", UserRoles.SUPER_ADMINISTRATOR);
-            Menu permissionsMenu = new Menu(null, "/permissions", "AiOutlineLock", UserRoles.SUPER_ADMINISTRATOR);
-            Menu favoritesMenu = new Menu(null, "/favorites", "AiOutlineHeart", "");
-            Menu homeMenu = new Menu(null, "/home", "BiHomeAlt", "");
-            Menu createBusMenu = new Menu(null, "/create-bus", "GiBusStop", UserRoles.ADMINISTRATOR);
-            Menu busMenu = new Menu(null, "/bus", "BiBusSchool", UserRoles.ADMINISTRATOR);
-            Menu logoutMenu = new Menu(null, "/logout", "BiDoorOpen", "");
+
+    private void loadMenusData() {
+        if (this.menuDAO.count() == 0) {
+            Menu profileMenu = new Menu(1L, "/profile", "CgProfile", "");
+            Menu statisticsMenu = new Menu(2L, "/statistics", "VscGraph", PermissionsEnum.VIEW_STATISTICS.getValue());
+            Menu logsMenu = new Menu(3L, "/logs", "AiOutlineAlignLeft", PermissionsEnum.VIEW_LOGS.getValue());
+            Menu permissionsMenu = new Menu(4L, "/permissions", "AiOutlineLock", PermissionsEnum.UPDATE_PERMISSION_USER.getValue());
+            Menu favoritesMenu = new Menu(5L, "/favorites", "AiOutlineHeart", "");
+            Menu homeMenu = new Menu(6L, "/home", "BiHomeAlt", "");
+            Menu createBusMenu = new Menu(7L, "/create-bus", "GiBusStop", PermissionsEnum.CREATE_BUS.getValue());
+            Menu busMenu = new Menu(8L, "/bus", "BiBusSchool", PermissionsEnum.CREATE_BUS.getValue());
+            Menu logoutMenu = new Menu(9L, "/logout", "BiDoorOpen", "");
+            
+            List<Menu> menuList = new ArrayList<Menu>() {
+                {
+                    add(profileMenu);
+                    add(statisticsMenu);
+                    add(logsMenu);
+                    add(permissionsMenu);
+                    add(favoritesMenu);
+                    add(homeMenu);
+                    add(createBusMenu);
+                    add(busMenu);
+                    add(logoutMenu);
+                }
+            };
+            
+            menuDAO.saveAll(menuList);
         }
     }
 
@@ -58,6 +76,8 @@ public class Seeder implements CommandLineRunner {
             Permission updateBus = new Permission(5, "Atualizar Ônibus", PermissionsEnum.UPDATE_BUS.getValue());
             Permission findBusForCurrentUser = new Permission(6, "Retornar Ônibus do Usuário", PermissionsEnum.RETURN_BUS_FROM_USER.getValue());
             Permission deleteBus = new Permission(7, "Deletar Ônibus", PermissionsEnum.DELETE_BUS.getValue());
+            Permission viewLogs = new Permission(8, "Visualizar Logs", PermissionsEnum.VIEW_LOGS.getValue());
+            Permission viewStatistics = new Permission(9, "Visualizar Estatísticas", PermissionsEnum.VIEW_STATISTICS.getValue());
 
             List<Permission> permissionList = new ArrayList<Permission>() {{
                 add(returnUsers);
@@ -67,6 +87,8 @@ public class Seeder implements CommandLineRunner {
                 add(updateBus);
                 add(findBusForCurrentUser);
                 add(deleteBus);
+                add(viewLogs);
+                add(viewStatistics);
             }};
 
             this.permissionDAO.saveAll(permissionList);
@@ -87,16 +109,18 @@ public class Seeder implements CommandLineRunner {
             }};
 
             List<Permission> permissionsSuperAdm = new ArrayList<Permission>() {{
-                addAll(permissionsAdm);
                 add(permissionDAO.findByIdExsits(1));
                 add(permissionDAO.findByIdExsits(2));
                 add(permissionDAO.findByIdExsits(3));
+                addAll(permissionsAdm);
+                add(permissionDAO.findByIdExsits(8));
+                add(permissionDAO.findByIdExsits(9));
             }};
 
             PermissionsGroup permissionsGroupDefault = new PermissionsGroup(1, UserRoles.DEFAULT, permissionsDefault);
             PermissionsGroup permissionsGroupAdm = new PermissionsGroup(2, UserRoles.ADMINISTRATOR, permissionsAdm);
             PermissionsGroup permissionsGroupSuperAdm = new PermissionsGroup(3, UserRoles.SUPER_ADMINISTRATOR, permissionsSuperAdm);
-            
+
             permissionsGroupDAO.save(permissionsGroupDefault);
             permissionsGroupDAO.save(permissionsGroupAdm);
             permissionsGroupDAO.save(permissionsGroupSuperAdm);

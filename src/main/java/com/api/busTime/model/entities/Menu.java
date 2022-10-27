@@ -10,7 +10,11 @@ import javax.persistence.*;
 @Entity
 @Table(name = "menu")
 public class Menu {
-    
+
+    public Menu(){
+        
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

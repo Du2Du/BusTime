@@ -7,7 +7,9 @@ public enum PermissionsEnum {
     CREATE_BUS("create_bus"),
     UPDATE_BUS("update_bus"),
     RETURN_BUS_FROM_USER("return_bus_from_user"),
-    DELETE_BUS("delete_bus");
+    DELETE_BUS("delete_bus"),
+    VIEW_LOGS("view_logs"),
+    VIEW_STATISTICS("view_statistics");
 
     String value;
 

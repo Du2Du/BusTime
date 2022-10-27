@@ -7,10 +7,7 @@ import com.api.busTime.model.bo.TokenProvider;
 import com.api.busTime.model.bo.UsersBO;
 import com.api.busTime.model.dao.UserDAO;
 import com.api.busTime.model.dtos.*;
-import com.api.busTime.model.entities.Bus;
-import com.api.busTime.model.entities.PermissionsGroup;
-import com.api.busTime.model.entities.User;
-import com.api.busTime.model.entities.UserRoles;
+import com.api.busTime.model.entities.*;
 import com.api.busTime.utils.CookieUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -284,12 +281,12 @@ public class UserBOImpl implements UsersBO {
 
         User user = userDAO.getById(userId);
         UserDTO userDTO = new UserDTO();
-        
+
         user.setFavoriteBus(busList);
         userDTO.setFavoriteBus(busList);
-        
+
         BeanUtils.copyProperties(userDAO.save(user), userDTO);
-        
+
         return ResponseEntity.ok(userDTO);
     }
 
@@ -298,12 +295,26 @@ public class UserBOImpl implements UsersBO {
         UserDTO user = me();
         List<BusDTO> busDTOList = user.getFavoriteBus().stream().map(bus -> {
             BusDTO busDTO = new BusDTO();
-            
+
             BeanUtils.copyProperties(bus, busDTO);
-            
+
             return busDTO;
         }).collect(Collectors.toList());
-        
+
         return ResponseEntity.ok(busDTOList);
+    }
+
+    @Override
+    public boolean verifyPermission(String permissionId) {
+        UserDTO user = me();
+        List<Permission> permissionList = user.getPermissionsGroup().getPermissionList();
+
+        List<Permission> permissionReturn = permissionList.stream().filter(permission -> {
+            if (permission.getPermissionId().equals(permissionId)) return true;
+            return false;
+        }).collect(Collectors.toList());
+        
+        if(permissionReturn.size() == 0)return false;
+        return true;
     }
 }
