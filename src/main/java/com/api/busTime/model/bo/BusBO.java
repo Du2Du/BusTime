@@ -15,7 +15,7 @@ public interface BusBO {
 
     ResponseEntity<BusDTO> update(Long busId, UpdateBusDTO updateBusDTO);
 
-    ResponseEntity<List<BusDTO>> findBusForUser(Long userId);
+    ResponseEntity<List<BusDTO>> findBusForUser();
 
     Page<BusDTO> listAll(Pageable pageable);
 

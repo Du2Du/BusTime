@@ -14,9 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class LogMessageBOImpl implements LogMessageBO {
@@ -24,44 +21,34 @@ public class LogMessageBOImpl implements LogMessageBO {
     @Autowired
     LogMessageDAO logMessageDAO;
 
+    private LogMessageDTO formatEntityToDto(LogMessage logMessage) {
+        LogMessageDTO logMessageDTO = new LogMessageDTO();
+        BeanUtils.copyProperties(logMessage, logMessageDTO);
+        return logMessageDTO;
+    }
+
+    private Page<LogMessageDTO> formatPageEntityToPageDto(Pageable pageable) {
+        Page<LogMessage> logs = logMessageDAO.listForDate(pageable);
+        return logs.map(this::formatEntityToDto);
+    }
+
     @Override
     public ResponseEntity<LogMessageDTO> create(CreateLogMessageDTO createLogMessageDTO) {
         LocalDateTime time = LocalDateTime.now(ZoneId.of("Brazil/East"));
-
-        LogMessageDTO logMessageDTO = new LogMessageDTO();
         LogMessage logMessage = new LogMessage();
-
         BeanUtils.copyProperties(createLogMessageDTO, logMessage);
         logMessage.setTime(time);
-
-        BeanUtils.copyProperties(logMessageDAO.save(logMessage), logMessageDTO);
-        return ResponseEntity.ok(logMessageDTO);
+        return ResponseEntity.ok(formatEntityToDto(logMessageDAO.save(logMessage)));
     }
 
     @Override
     public ResponseEntity<LogMessageDTO> getById(Long logId) {
         LogMessage logMessage = logMessageDAO.getById(logId);
-
-        LogMessageDTO logMessageDTO = new LogMessageDTO();
-
-        BeanUtils.copyProperties(logMessage, logMessageDTO);
-
-        return ResponseEntity.ok(logMessageDTO);
+        return ResponseEntity.ok(formatEntityToDto(logMessage));
     }
 
     @Override
     public ResponseEntity<Page<LogMessageDTO>> getAllLogs(Pageable pageable) {
-        Page<LogMessage> logs = logMessageDAO.listForDate(pageable);
-        
-        Page<LogMessageDTO> logsDTO;
-        
-        logsDTO = logs.map((log) -> {
-            LogMessageDTO logDTO = new LogMessageDTO();
-
-            BeanUtils.copyProperties(log, logDTO);
-            return logDTO;
-        });
-
-        return ResponseEntity.ok(logsDTO);
+        return ResponseEntity.ok(formatPageEntityToPageDto(pageable));
     }
 }

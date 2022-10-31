@@ -1,6 +1,7 @@
 package com.api.busTime.model.bo.impl;
 
 import com.api.busTime.exceptions.EntityExistsException;
+import com.api.busTime.exceptions.ForbbidenException;
 import com.api.busTime.exceptions.ResourceNotFoundException;
 import com.api.busTime.model.bo.PermissionsBO;
 import com.api.busTime.model.bo.TokenProvider;
@@ -14,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,6 +22,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -45,13 +46,24 @@ public class UserBOImpl implements UsersBO {
         this.userDAO = userDAO;
     }
 
+    private UserDTO formatEntityToDto(User user) {
+        UserDTO userDTO = new UserDTO();
+        BeanUtils.copyProperties(user, userDTO);
+        return userDTO;
+    }
+
+    private List<BusDTO> formatListBusToListBus(List<Bus> busList) {
+        return busList.stream().map(bus -> {
+            BusDTO busDTO = new BusDTO();
+            BeanUtils.copyProperties(bus, busDTO);
+            return busDTO;
+        }).collect(Collectors.toList());
+    }
+
     //Método que procura usuário pelo email
     private UserDTO findByEmail(String email) {
         User user = userDAO.findUserByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
-        UserDTO userReturn = new UserDTO();
-        BeanUtils.copyProperties(user, userReturn);
-
-        return userReturn;
+        return formatEntityToDto(user);
     }
 
     //Método que adiciona o token de acesso
@@ -79,77 +91,45 @@ public class UserBOImpl implements UsersBO {
         //Retornando erro caso exista um usuário com o email cadastrado
         if (userOptional.isPresent())
             throw new EntityExistsException("Usuário com email ja cadsatrado");
-
         if (userOptionalCpf.isPresent())
             throw new EntityExistsException("Usuário com cpf ja cadsatrado");
 
-
         User user = new User();
-        UserDTO userReturn = new UserDTO();
         PermissionsGroupDTO permissionsGroupDTO = permissionsGroupBO.findByName(UserRoles.DEFAULT).getBody();
         PermissionsGroup permissionsGroup = new PermissionsGroup();
-
         assert permissionsGroupDTO != null;
         BeanUtils.copyProperties(permissionsGroupDTO, permissionsGroup);
-
-        //Colocando os valores de userDTO em user
-        BeanUtils.copyProperties(userDTO, userReturn);
-        userReturn.setPermissionsGroup(permissionsGroup);
-
-        BeanUtils.copyProperties(userReturn, user);
+        user.setPermissionsGroup(permissionsGroup);
+        user.setFavoriteBus(new ArrayList<>());
+        BeanUtils.copyProperties(userDTO, user);
 
         //Encriptografando senha
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(10, new SecureRandom());
         String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
 
-        //Deixando usuário como user normal
-
-        //Criando usuário
-        BeanUtils.copyProperties(this.userDAO.save(user), userReturn);
-
-        return userReturn;
+        return formatEntityToDto(this.userDAO.save(user));
     }
 
     //Método que retorna todos os usuário
     @Override
     public ResponseEntity<Page<UserDTO>> findAll(Pageable pageable) {
-        Page<User> allUsers;
-        Page<UserDTO> allUsersReturn;
-
-        allUsers = userDAO.listAllForId(pageable);
-
-        allUsersReturn = allUsers.map((user) -> {
-            UserDTO newUser = new UserDTO();
-            BeanUtils.copyProperties(user, newUser);
-
-            return newUser;
-        });
-
-        return ResponseEntity.ok(allUsersReturn);
+        Page<User> allUsers = userDAO.listAllForId(pageable);
+        return ResponseEntity.ok(allUsers.map(this::formatEntityToDto));
     }
 
     //Método que atualiza o atributo isAdmin de um usuario
     @Override
     public ResponseEntity<UserDTO> setAdminUser(Long userId, UpdatePermissionDTO updatePermissionDTO) {
-        User user = userDAO.getById(userId);
+        User user = userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário Não encontrado"));
         PermissionsGroupDTO permissionsGroupDTO = permissionsGroupBO.findByName(updatePermissionDTO.getPermissionGroup()).getBody();
         PermissionsGroup permissionsGroup = new PermissionsGroup();
-
         if (permissionsGroupDTO == null)
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-
+            throw new ResourceNotFoundException("Grupo de Permissão não encontrado!");
         BeanUtils.copyProperties(permissionsGroupDTO, permissionsGroup);
         user.setPermissionsGroup(permissionsGroup);
-
-        UserDTO userSave = new UserDTO();
-
-        BeanUtils.copyProperties(user, userSave);
         userDAO.save(user);
-
-        return ResponseEntity.ok(userSave);
-
-
+        return ResponseEntity.ok(formatEntityToDto(user));
     }
 
     //Método que irá logar o usuário
@@ -158,17 +138,13 @@ public class UserBOImpl implements UsersBO {
         UserDTO user;
         String email = loginRequest.getEmail();
         user = this.findByEmail(email);
-        Boolean accessTokenValid = tokenProvider.validateToken(accessToken);
-        Boolean refreshTokenValid = tokenProvider.validateToken(refreshToken);
-
+        boolean accessTokenValid = tokenProvider.validateToken(accessToken);
+        boolean refreshTokenValid = tokenProvider.validateToken(refreshToken);
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(10, new SecureRandom());
         String encodedPassword = bCryptPasswordEncoder.encode(loginRequest.getPassword());
-
         LoginRequest loginRequestLog = new LoginRequest();
-
         BeanUtils.copyProperties(loginRequest, loginRequestLog);
         loginRequestLog.setPassword(encodedPassword);
-
         HttpHeaders responseHeaders = new HttpHeaders();
         Token newAccessToken;
         Token newRefreshToken;
@@ -212,13 +188,11 @@ public class UserBOImpl implements UsersBO {
     //Método que atualiza o token
     @Override
     public ResponseEntity<LoginResponse> refresh(String accessToken, String refreshToken) {
-        Boolean refreshTokenValid = tokenProvider.validateToken(refreshToken);
+        boolean refreshTokenValid = tokenProvider.validateToken(refreshToken);
         if (!refreshTokenValid) {
             throw new IllegalArgumentException("O token refresh é inválido!");
         }
-
         String currentUserEmail = tokenProvider.getUsernameFromToken(refreshToken);
-
         Token newAccessToken = tokenProvider.generateAccessToken(currentUserEmail);
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add(HttpHeaders.SET_COOKIE,
@@ -233,74 +207,45 @@ public class UserBOImpl implements UsersBO {
     //Método que irá pegar os dados de um usuário pelo id
     @Override
     public UserDTO findById(Long userId) {
-        //Realiza uma busca do usuário com o id recebido
+        UserDTO currentUser = me();
+        if(!currentUser.getId().equals(userId))throw new ForbbidenException("Você não tem permissão para acessar esse recurso");
         User user = this.userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
-        UserDTO userReturn = new UserDTO();
-        BeanUtils.copyProperties(user, userReturn);
-
-        return userReturn;
+        return formatEntityToDto(user);
     }
 
     //Método que irá fazer o update do usuário
     @Override
     public ResponseEntity<UserDTO> update(Long userId, UpdateUserDTO updateUserDTO) {
         UserDTO currentUser = me();
-
-        if (!currentUser.getId().equals(userId)) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-
+        if (!currentUser.getId().equals(userId)) throw new ForbbidenException("Usuário não permitido!");
         User user = userDAO.getById(userId);
-        UserDTO userDTO = new UserDTO();
-
-
-        //Colocando os valores de updateUserDTO em user
-        BeanUtils.copyProperties(updateUserDTO, userDTO);
-        userDTO.setPermissionsGroup(user.getPermissionsGroup());
-        userDTO.setFavoriteBus(user.getFavoriteBus());
-        BeanUtils.copyProperties(userDTO, user);
+        BeanUtils.copyProperties(updateUserDTO, currentUser);
+        BeanUtils.copyProperties(currentUser, user);
         this.userDAO.save(user);
-
-        return ResponseEntity.ok(userDTO);
+        return ResponseEntity.ok(currentUser);
     }
 
     //Método que irá deletar o usuário
     @Override
     public ResponseEntity<String> delete(Long userId) {
-
-        //Procurando o usuário pelo id
         UserDTO userDTO = findById(userId);
         User user = new User();
-
         BeanUtils.copyProperties(userDTO, user);
-
         this.userDAO.delete(user);
         return ResponseEntity.ok("Usuário Deletado com sucesso");
     }
 
     @Override
     public ResponseEntity<UserDTO> updateFavoriteBus(Long userId, List<Bus> busList) {
-
         User user = userDAO.getById(userId);
-        UserDTO userDTO = new UserDTO();
-
         user.setFavoriteBus(busList);
-        userDTO.setFavoriteBus(busList);
-
-        BeanUtils.copyProperties(userDAO.save(user), userDTO);
-
-        return ResponseEntity.ok(userDTO);
+        return ResponseEntity.ok(formatEntityToDto(userDAO.save(user)));
     }
 
     @Override
     public ResponseEntity<List<BusDTO>> listFavoriteBuses() {
         UserDTO user = me();
-        List<BusDTO> busDTOList = user.getFavoriteBus().stream().map(bus -> {
-            BusDTO busDTO = new BusDTO();
-
-            BeanUtils.copyProperties(bus, busDTO);
-
-            return busDTO;
-        }).collect(Collectors.toList());
-
+        List<BusDTO> busDTOList = formatListBusToListBus(user.getFavoriteBus());
         return ResponseEntity.ok(busDTOList);
     }
 
@@ -308,13 +253,9 @@ public class UserBOImpl implements UsersBO {
     public boolean verifyPermission(String permissionId) {
         UserDTO user = me();
         List<Permission> permissionList = user.getPermissionsGroup().getPermissionList();
-
-        List<Permission> permissionReturn = permissionList.stream().filter(permission -> {
-            if (permission.getPermissionId().equals(permissionId)) return true;
-            return false;
-        }).collect(Collectors.toList());
-        
-        if(permissionReturn.size() == 0)return false;
-        return true;
+        List<Permission> permissionReturn = permissionList.stream().filter(permission ->
+                permission.getPermissionId().equals(permissionId)
+        ).collect(Collectors.toList());
+        return permissionReturn.size() != 0;
     }
 }

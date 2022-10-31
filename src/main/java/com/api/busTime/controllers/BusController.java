@@ -30,12 +30,12 @@ public class BusController {
 
     @GetMapping("/{id}")
     public ResponseEntity<BusDTO> getById(@PathVariable Long id) {
-        return this.busBO.getById(id);
+         return this.busBO.getById(id);
     }
 
-    @GetMapping("/user/{id}")
-    public ResponseEntity<List<BusDTO>> findBusForUser(@PathVariable Long id) {
-        return this.busBO.findBusForUser(id);
+    @GetMapping("/user")
+    public ResponseEntity<List<BusDTO>> findBusForUser() {
+        return this.busBO.findBusForUser();
     }
 
     @GetMapping("/line")

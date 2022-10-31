@@ -1,24 +1,25 @@
 package com.api.busTime.model.bo.impl;
 
+import com.api.busTime.exceptions.EntityExistsException;
+import com.api.busTime.exceptions.ForbbidenException;
 import com.api.busTime.exceptions.ResourceNotFoundException;
 import com.api.busTime.model.bo.BusBO;
 import com.api.busTime.model.bo.LineBusBO;
 import com.api.busTime.model.bo.UsersBO;
 import com.api.busTime.model.dao.BusDAO;
-import com.api.busTime.model.dao.LineBusDAO;
 import com.api.busTime.model.dtos.*;
 import com.api.busTime.model.entities.Bus;
 import com.api.busTime.model.entities.LineBus;
-import com.api.busTime.model.entities.User;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,39 +34,69 @@ public class BusBOImpl implements BusBO {
     @Autowired
     private UsersBO userBO;
 
-    public boolean findBusWithNumber(Integer busNumber) {
-        Optional<Bus> bus = this.busDAO.listBusForNumber(busNumber);
+    private BusDTO formatEntityToDto(Bus bus) {
+        BusDTO busDTO = new BusDTO();
+        BeanUtils.copyProperties(bus, busDTO);
+        return busDTO;
+    }
 
-        return !bus.isPresent();
+    private boolean findBusWithNumber(Integer busNumber) {
+        Optional<Bus> bus = this.busDAO.listBusForNumber(busNumber);
+        return bus.isPresent();
+    }
+
+    private LineBusDTO findLineForName(String lineName) {
+        return this.lineBusBO.getLineByName(lineName).getBody();
+    }
+
+    private boolean findBusInBusList(List<Bus> busList, Long busId) {
+        List<Bus> busExists = busList.stream().filter(busOne ->
+                busOne.getId().equals(busId)
+        ).collect(Collectors.toList());
+        return busExists.size() != 0;
+    }
+
+    private void removeBusFromList(List<Bus> busList, Long busId) {
+        List<Bus> newBusList = busList.stream().filter(busA ->
+                busA.getId().equals(busId)
+        ).collect(Collectors.toList());
+        busList.remove(newBusList.get(0));
+    }
+
+    private void verifyIdUserAdminBus(Bus bus, UserDTO user) {
+        //Verificando se o id do usuárioAdmin é o mesmo do usuário logado
+        if (!bus.getIdUserAdmin().equals(user.getId()))
+            throw new ForbbidenException("Usuário não permitido!");
+    }
+
+    private List<BusDTO> formatListEntityToListDto(List<Bus> busList) {
+        return busList.stream().map(this::formatEntityToDto).collect(Collectors.toList());
+    }
+
+    private Page<BusDTO> formatPageEntityPageToDto(Page<Bus> buses) {
+        return buses.map(this::formatEntityToDto);
     }
 
     //Método que cria o onibus
     @Override
     public ResponseEntity<BusDTO> create(CreateBusDTO createBusDTO) {
         Bus bus = new Bus();
-
-        if (!findBusWithNumber(createBusDTO.getBusNumber()))
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        if (findBusWithNumber(createBusDTO.getBusNumber()))
+            throw new EntityExistsException("Número de ônibus ja cadastrado");
 
         //Buscando se a linha de ônibus existe
-        LineBusDTO lineBusDTO = this.lineBusBO.getLineByName(createBusDTO.getLineBus().getLineName()).getBody();
+        LineBusDTO lineBusDTO = findLineForName(createBusDTO.getLineBus().getLineName());
         LineBus lineBus = new LineBus();
         CreateLineBusDTO createLineBusDTO = createBusDTO.getLineBus();
         if (lineBusDTO == null)
             lineBusDTO = lineBusBO.create(createLineBusDTO).getBody();
 
+        assert lineBusDTO != null;
         BeanUtils.copyProperties(lineBusDTO, lineBus);
-
         bus.setLineBus(lineBus);
-
-        BusDTO busReturn = new BusDTO();
-
         //Colocando os valores de userDTO em user
         BeanUtils.copyProperties(createBusDTO, bus);
-
-        BeanUtils.copyProperties(this.busDAO.save(bus), busReturn);
-
-        return ResponseEntity.ok(busReturn);
+        return ResponseEntity.ok(formatEntityToDto(this.busDAO.save(bus)));
     }
 
     //Método que atualiza as informações do onibus
@@ -75,12 +106,9 @@ public class BusBOImpl implements BusBO {
 
         //Verificando se existe algum onibus com esse id
         Bus bus = this.busDAO.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
-        BusDTO busReturn = new BusDTO();
         LineBus lineBus1 = new LineBus();
-        //Verificando se o id do usuárioAdmin é o mesmo do usuário logado
-        if (!bus.getIdUserAdmin().equals(user.getId()))
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        LineBusDTO lineBusDTO = this.lineBusBO.getLineByName(updateBusDTO.getLineBus().getLineName()).getBody();
+        verifyIdUserAdminBus(bus, user);
+        LineBusDTO lineBusDTO = findLineForName(updateBusDTO.getLineBus().getLineName());
 
         if (!Objects.equals(updateBusDTO.getLineBus().getLineName(), bus.getLineBus().getLineName())) {
 
@@ -91,77 +119,47 @@ public class BusBOImpl implements BusBO {
             }
             updateBusDTO.setLineBus(lineBusDTO);
         }
+        assert lineBusDTO != null;
         BeanUtils.copyProperties(lineBusDTO, lineBus1);
-
         bus.setLineBus(lineBus1);
         //Colocando os valores de userDTO em user
         BeanUtils.copyProperties(updateBusDTO, bus);
-
-        BeanUtils.copyProperties(this.busDAO.save(bus), busReturn);
-
-        return ResponseEntity.ok(busReturn);
+        return ResponseEntity.ok(formatEntityToDto(this.busDAO.save(bus)));
     }
 
     //Método que irá deletar o onibus
     @Override
     public ResponseEntity<String> delete(Long busId) {
         UserDTO user = userBO.me();
-
         //Verificando se existe algum onibus com esse id
         Bus bus = this.busDAO.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
-
-        //Verificando se o id do usuárioAdmin é o mesmo do usuário logado
-        if (!bus.getIdUserAdmin().equals(user.getId()))
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-
-
+        verifyIdUserAdminBus(bus, user);
         this.busDAO.delete(bus);
-
         return ResponseEntity.ok("Ônibus deletado com sucesso");
     }
 
     //Método que lista o onibus por id
     @Override
     public ResponseEntity<BusDTO> getById(Long busId) {
-
         Bus bus = this.busDAO.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
-        BusDTO busReturn = new BusDTO();
-        BeanUtils.copyProperties(bus, busReturn);
-
-        return ResponseEntity.ok(busReturn);
+        return ResponseEntity.ok(formatEntityToDto(bus));
     }
 
     //Método que retorna os onibus criados pelo usuario
     @Override
-    public ResponseEntity<List<BusDTO>> findBusForUser(Long userId) {
+    public ResponseEntity<List<BusDTO>> findBusForUser() {
         List<BusDTO> busReturn;
         UserDTO user = userBO.me();
-
-        if (!userId.equals(user.getId())) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-
-        busReturn = this.busDAO.listBusForUserId(userId).stream().map((bus) -> {
-
-            BusDTO busDTO = new BusDTO();
-            BeanUtils.copyProperties(bus, busDTO);
-            return busDTO;
-        }).collect(Collectors.toList());
-
+        busReturn = formatListEntityToListDto(this.busDAO.listBusForUserId(user.getId()));
         return ResponseEntity.ok(busReturn);
     }
 
     //Método que lista os onibus pela linha
     @Override
     public Page<BusDTO> listBusForLine(String line, Pageable pageable) {
-
         Page<Bus> bus = this.busDAO.listBusForLine(line, pageable);
         Page<BusDTO> busReturn;
-
-        busReturn = bus.map((page) -> {
-            BusDTO busDTO = new BusDTO();
-            BeanUtils.copyProperties(page, busDTO);
-            return busDTO;
-        });
-
+        busReturn = formatPageEntityPageToDto(bus);
         return busReturn;
     }
 
@@ -170,12 +168,7 @@ public class BusBOImpl implements BusBO {
     @Override
     public Page<BusDTO> listAll(Pageable pageable) {
         Page<BusDTO> busReturn;
-        busReturn = this.busDAO.listForDate(pageable).map((page) -> {
-            BusDTO bus = new BusDTO();
-            BeanUtils.copyProperties(page, bus);
-            return bus;
-        });
-
+        busReturn = formatPageEntityPageToDto(this.busDAO.listForDate(pageable));
         return busReturn;
     }
 
@@ -184,28 +177,17 @@ public class BusBOImpl implements BusBO {
     @Override
     public ResponseEntity<List<BusDTO>> favoriteBus(Long busId) {
         UserDTO user = userBO.me();
-
         BusDTO busDTO = getById(busId).getBody();
         Bus bus = new Bus();
-
         List<Bus> busList = user.getFavoriteBus();
+        assert busDTO != null;
         BeanUtils.copyProperties(busDTO, bus);
 
-        if (busList.contains(bus))
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-
+        if (findBusInBusList(busList, bus.getId()))
+            throw new EntityExistsException("Ônibus já favoritado!");
         busList.add(bus);
-
         userBO.updateFavoriteBus(user.getId(), busList);
-
-        List<BusDTO> busListDTO = busList.stream().map(busMap -> {
-            BusDTO busDTO1 = new BusDTO();
-
-            BeanUtils.copyProperties(busMap, busDTO1);
-
-            return busDTO1;
-        }).collect(Collectors.toList());
-
+        List<BusDTO> busListDTO = formatListEntityToListDto(busList);
         return ResponseEntity.ok(busListDTO);
     }
 
@@ -213,53 +195,29 @@ public class BusBOImpl implements BusBO {
     @Override
     public ResponseEntity<List<BusDTO>> desfavoriteBus(Long busId) {
         UserDTO currenUser = userBO.me();
-
         Long userId = currenUser.getId();
-
-        if (!Objects.equals(currenUser.getId(), userId))
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-
-        UserDTO user = userBO.findById(userId);
         BusDTO busDTO = getById(busId).getBody();
+        List<Bus> busList = currenUser.getFavoriteBus();
 
-        List<Bus> busList = user.getFavoriteBus();
-        List<Bus> verifyBusInList = busList.stream().filter(bus ->
-                bus.getId().equals(busDTO.getId())
-        ).collect(Collectors.toList());
+        assert busDTO != null;
+        if (!findBusInBusList(busList, busDTO.getId()))
+            throw new ResourceNotFoundException("Ônibus não encontrado nos favoritos!");
 
-        if (verifyBusInList.size() == 0)
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-
-        busList.remove(verifyBusInList.get(0));
+        removeBusFromList(busList, busId);
         userBO.updateFavoriteBus(userId, busList);
-
-        List<BusDTO> busListDTO = busList.stream().map(busMap -> {
-            BusDTO busDTO1 = new BusDTO();
-
-            BeanUtils.copyProperties(busMap, busDTO1);
-
-            return busDTO1;
-        }).collect(Collectors.toList());
-
-        User userSave = new User();
-
-        BeanUtils.copyProperties(user, userSave);
-
+        List<BusDTO> busListDTO = formatListEntityToListDto(busList);
         return ResponseEntity.ok(busListDTO);
     }
 
     @Override
     public ResponseEntity<List<StatisticsDTO>> listBusStatistics() {
         List<LineBusDTO> lineBusDTOList = this.lineBusBO.listAll().getBody();
-
+        assert lineBusDTOList != null;
         List<StatisticsDTO> statisticsDTOList = lineBusDTOList.stream().map(line -> {
             int savedQuantity = this.busDAO.listLineBusFavorited(line.getId());
-            if(savedQuantity == 0)return null;
-            StatisticsDTO statisticsDTO = new StatisticsDTO(savedQuantity, line.getLineName());
-            
-            return statisticsDTO;
-        }).filter(lineBus -> lineBus != null).collect(Collectors.toList());
-
+            if (savedQuantity == 0) return null;
+            return new StatisticsDTO(savedQuantity, line.getLineName());
+        }).filter(Objects::nonNull).collect(Collectors.toList());
         return ResponseEntity.ok(statisticsDTOList);
     }
 }
