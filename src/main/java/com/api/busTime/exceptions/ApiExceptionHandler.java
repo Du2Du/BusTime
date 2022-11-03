@@ -39,29 +39,35 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                 Collections.singletonList(exception.getMessage()));
     }
 
-//    @Override
-//    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-//                                                                  HttpHeaders headers, HttpStatus status,
-//                                                                  WebRequest request) {
-//        List<String> errors = new ArrayList<>();
-//        ex.getBindingResult().getFieldErrors().forEach(fieldError -> {
-//            errors.add("Field " + fieldError.getField() + " " + fieldError.getDefaultMessage());
-//        });
-//        ex.getBindingResult().getGlobalErrors().forEach(objectError -> {
-//            errors.add("Field " + objectError.getObjectName() + " " + objectError.getDefaultMessage());
-//        });
-//
-//
-//        return buildResponseEntity(HttpStatus.BAD_REQUEST, "Informed argument(s) validation error(s)", errors);
-//    }
-//
-//    @Override
-//    protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
-//                                                                  HttpHeaders headers, HttpStatus status,
-//                                                                  WebRequest request) {
-//        return buildResponseEntity(HttpStatus.BAD_REQUEST, "Malformed JSON body and/or field error",
-//                Collections.singletonList(ex.getMessage()));
-//    }
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<Object> handleEntityForbbiden(UnauthorizedException exception) {
+        return buildResponseEntity(HttpStatus.UNAUTHORIZED, exception.getMessage(),
+                Collections.singletonList(exception.getMessage()));
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+                                                                  HttpHeaders headers, HttpStatus status,
+                                                                  WebRequest request) {
+        List<String> errors = new ArrayList<>();
+        ex.getBindingResult().getFieldErrors().forEach(fieldError -> {
+            errors.add("Field " + fieldError.getField() + " " + fieldError.getDefaultMessage());
+        });
+        ex.getBindingResult().getGlobalErrors().forEach(objectError -> {
+            errors.add("Field " + objectError.getObjectName() + " " + objectError.getDefaultMessage());
+        });
+
+
+        return buildResponseEntity(HttpStatus.BAD_REQUEST, "Informed argument(s) validation error(s)", errors);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
+                                                                  HttpHeaders headers, HttpStatus status,
+                                                                  WebRequest request) {
+        return buildResponseEntity(HttpStatus.BAD_REQUEST, "Malformed JSON body and/or field error",
+                Collections.singletonList(ex.getMessage()));
+    }
 
     private ResponseEntity<Object> buildResponseEntity(HttpStatus httpStatus, String message, List<String> errors) {
         ApiError apiError = ApiError.builder()

@@ -3,6 +3,7 @@ package com.api.busTime.model.bo.impl;
 import com.api.busTime.exceptions.EntityExistsException;
 import com.api.busTime.exceptions.ForbbidenException;
 import com.api.busTime.exceptions.ResourceNotFoundException;
+import com.api.busTime.exceptions.UnauthorizedException;
 import com.api.busTime.model.bo.PermissionsBO;
 import com.api.busTime.model.bo.TokenProvider;
 import com.api.busTime.model.bo.UsersBO;
@@ -180,9 +181,14 @@ public class UserBOImpl implements UsersBO {
     //Método que retorna os dados do usuário
     @Override
     public UserDTO me() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
-        return this.findByEmail(customUserDetails.getUsername());
+        try {
+
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+            return this.findByEmail(customUserDetails.getUsername());
+        } catch (Exception ex) {
+            throw new UnauthorizedException("Usuário não permitido");
+        }
     }
 
     //Método que atualiza o token
@@ -208,7 +214,8 @@ public class UserBOImpl implements UsersBO {
     @Override
     public UserDTO findById(Long userId) {
         UserDTO currentUser = me();
-        if(!currentUser.getId().equals(userId))throw new ForbbidenException("Você não tem permissão para acessar esse recurso");
+        if (!currentUser.getId().equals(userId))
+            throw new ForbbidenException("Você não tem permissão para acessar esse recurso");
         User user = this.userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
         return formatEntityToDto(user);
     }
