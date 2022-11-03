@@ -54,5 +54,6 @@ public class Interceptor implements HandlerInterceptor {
         createLogMessageDTO.setUrlStatus(RequisitionStatus.FAILURE.getValue());
         logMessageBO.create(createLogMessageDTO);
         throw new ForbbidenException("Você não tem permissão para acessar esse recurso!");
+    
     }
 }

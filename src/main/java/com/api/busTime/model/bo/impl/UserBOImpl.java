@@ -150,17 +150,27 @@ public class UserBOImpl implements UsersBO {
         Token newRefreshToken;
 
         //Validações se existe algum token, caso não irá criar para o usuário
-        if ((!accessTokenValid && !refreshTokenValid) || (accessTokenValid && refreshTokenValid)) {
+        if (!accessTokenValid && !refreshTokenValid) {
             newAccessToken = tokenProvider.generateAccessToken(user.getEmail());
             newRefreshToken = tokenProvider.generateRefreshToken(user.getEmail());
             addAccessTokenCookie(responseHeaders, newAccessToken);
             addRefreshTokenCookie(responseHeaders, newRefreshToken);
         }
+
         //Validações se existe algum token, caso não irá criar para o usuário
         if (!accessTokenValid && refreshTokenValid) {
             newAccessToken = tokenProvider.generateAccessToken(user.getEmail());
             addAccessTokenCookie(responseHeaders, newAccessToken);
         }
+
+        //Adiciona/cria os tokens
+        if (accessTokenValid && refreshTokenValid) {
+            newAccessToken = tokenProvider.generateAccessToken(user.getEmail());
+            newRefreshToken = tokenProvider.generateRefreshToken(user.getEmail());
+            addAccessTokenCookie(responseHeaders, newAccessToken);
+            addRefreshTokenCookie(responseHeaders, newRefreshToken);
+        }
+
         LoginResponse loginResponse = new LoginResponse(LoginResponse.SuccessFailure.SUCCESS, "Autenticação realizada com sucesso. " +
                 "Tokens criados no cookie.");
 
@@ -198,8 +208,7 @@ public class UserBOImpl implements UsersBO {
     @Override
     public UserDTO findById(Long userId) {
         UserDTO currentUser = me();
-        if (!currentUser.getId().equals(userId))
-            throw new ForbbidenException("Você não tem permissão para acessar esse recurso");
+        if(!currentUser.getId().equals(userId))throw new ForbbidenException("Você não tem permissão para acessar esse recurso");
         User user = this.userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
         return formatEntityToDto(user);
     }
