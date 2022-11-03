@@ -170,9 +170,13 @@ public class UserBOImpl implements UsersBO {
     //Método que retorna os dados do usuário
     @Override
     public UserDTO me() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
-        return this.findByEmail(customUserDetails.getUsername());
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+            return this.findByEmail(customUserDetails.getUsername());
+        }catch (Exception ex) {
+            throw new ForbbidenException("Usuário não permitido");
+        }
     }
 
     //Método que atualiza o token
