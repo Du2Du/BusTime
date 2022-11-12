@@ -5,6 +5,7 @@ import com.api.busTime.model.dao.PermissionsGroupDAO;
 import com.api.busTime.model.dtos.PermissionsGroupDTO;
 import com.api.busTime.model.entities.PermissionsGroup;
 import com.api.busTime.model.entities.UserRoles;
+import com.api.busTime.utils.FormatEntityToDTO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,15 +20,6 @@ public class PermissionsBOImpl implements PermissionsBO {
     @Autowired
     private PermissionsGroupDAO permissionsGroupDAO;
 
-    private List<PermissionsGroupDTO> formatListEntityToListDto() {
-        List<PermissionsGroup> permissionsGroups = permissionsGroupDAO.findAll();
-        return permissionsGroups.stream().map((per) -> {
-            PermissionsGroupDTO permissionsGroupDTO = new PermissionsGroupDTO();
-            BeanUtils.copyProperties(per, permissionsGroupDTO);
-            return permissionsGroupDTO;
-        }).collect(Collectors.toList());
-    }
-
     private PermissionsGroupDTO formatEntityToDto(PermissionsGroup permissionsGroup) {
         PermissionsGroupDTO permissionsGroupDTO = new PermissionsGroupDTO();
         BeanUtils.copyProperties(permissionsGroup, permissionsGroupDTO);
@@ -36,7 +28,7 @@ public class PermissionsBOImpl implements PermissionsBO {
 
     @Override
     public ResponseEntity<List<PermissionsGroupDTO>> findAll() {
-        return ResponseEntity.ok(formatListEntityToListDto());
+        return ResponseEntity.ok(FormatEntityToDTO.formatListEntityToListDTO(permissionsGroupDAO.findAll(), PermissionsGroupDTO::new));
     }
 
     @Override

@@ -5,7 +5,7 @@ import com.api.busTime.model.bo.UsersBO;
 import com.api.busTime.model.dao.MenuDAO;
 import com.api.busTime.model.dtos.MenuDTO;
 import com.api.busTime.model.entities.Menu;
-import org.springframework.beans.BeanUtils;
+import com.api.busTime.utils.FormatEntityToDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -23,16 +23,10 @@ public class MenuBOImpl implements MenuBO {
     @Autowired
     private UsersBO usersBO;
 
-    private MenuDTO formatEntityToDto(Menu menu) {
-        MenuDTO menuDTO = new MenuDTO();
-        BeanUtils.copyProperties(menu, menuDTO);
-        return menuDTO;
-    }
-
     private List<MenuDTO> formatListEntityToListDto() {
         List<Menu> menuList = menuDAO.findAll();
         return menuList.stream().map(menu -> {
-            MenuDTO menuDTO = formatEntityToDto(menu);
+            MenuDTO menuDTO = FormatEntityToDTO.formatEntityToDto(menu, MenuDTO::new);
             if (menu.getPermissionName().equals("")) return menuDTO;
             if (!usersBO.verifyPermission(menu.getPermissionName())) return null;
             return menuDTO;

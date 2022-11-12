@@ -11,6 +11,7 @@ import com.api.busTime.model.dao.UserDAO;
 import com.api.busTime.model.dtos.*;
 import com.api.busTime.model.entities.*;
 import com.api.busTime.utils.CookieUtil;
+import com.api.busTime.utils.FormatEntityToDTO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -47,24 +48,11 @@ public class UserBOImpl implements UsersBO {
         this.userDAO = userDAO;
     }
 
-    private UserDTO formatEntityToDto(User user) {
-        UserDTO userDTO = new UserDTO();
-        BeanUtils.copyProperties(user, userDTO);
-        return userDTO;
-    }
-
-    private List<BusDTO> formatListBusToListBus(List<Bus> busList) {
-        return busList.stream().map(bus -> {
-            BusDTO busDTO = new BusDTO();
-            BeanUtils.copyProperties(bus, busDTO);
-            return busDTO;
-        }).collect(Collectors.toList());
-    }
 
     //Método que procura usuário pelo email
     private UserDTO findByEmail(String email) {
         User user = userDAO.findUserByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
-        return formatEntityToDto(user);
+        return  FormatEntityToDTO.formatEntityToDto(user, UserDTO::new);
     }
 
     //Método que adiciona o token de acesso
@@ -109,14 +97,14 @@ public class UserBOImpl implements UsersBO {
         String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
 
-        return formatEntityToDto(this.userDAO.save(user));
+        return FormatEntityToDTO.formatEntityToDto(this.userDAO.save(user), UserDTO::new);
     }
 
     //Método que retorna todos os usuário
     @Override
     public ResponseEntity<Page<UserDTO>> findAll(Pageable pageable) {
         Page<User> allUsers = userDAO.listAllForId(pageable);
-        return ResponseEntity.ok(allUsers.map(this::formatEntityToDto));
+        return ResponseEntity.ok(allUsers.map(user -> FormatEntityToDTO.formatEntityToDto(user, UserDTO::new)));
     }
 
     //Método que atualiza o atributo isAdmin de um usuario
@@ -130,15 +118,14 @@ public class UserBOImpl implements UsersBO {
         BeanUtils.copyProperties(permissionsGroupDTO, permissionsGroup);
         user.setPermissionsGroup(permissionsGroup);
         userDAO.save(user);
-        return ResponseEntity.ok(formatEntityToDto(user));
+        return ResponseEntity.ok(FormatEntityToDTO.formatEntityToDto(user, UserDTO::new));
     }
 
     //Método que irá logar o usuário
     @Override
     public ResponseEntity<LoginResponse> login(LoginRequest loginRequest, String accessToken, String refreshToken) {
-        UserDTO user;
         String email = loginRequest.getEmail();
-        user = this.findByEmail(email);
+        UserDTO user = this.findByEmail(email);
         boolean accessTokenValid = tokenProvider.validateToken(accessToken);
         boolean refreshTokenValid = tokenProvider.validateToken(refreshToken);
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(10, new SecureRandom());
@@ -151,7 +138,7 @@ public class UserBOImpl implements UsersBO {
         Token newRefreshToken;
 
         //Validações se existe algum token, caso não irá criar para o usuário
-        if (!accessTokenValid && !refreshTokenValid) {
+        if ((!accessTokenValid && !refreshTokenValid) || (accessTokenValid && refreshTokenValid)) {
             newAccessToken = tokenProvider.generateAccessToken(user.getEmail());
             newRefreshToken = tokenProvider.generateRefreshToken(user.getEmail());
             addAccessTokenCookie(responseHeaders, newAccessToken);
@@ -162,14 +149,6 @@ public class UserBOImpl implements UsersBO {
         if (!accessTokenValid && refreshTokenValid) {
             newAccessToken = tokenProvider.generateAccessToken(user.getEmail());
             addAccessTokenCookie(responseHeaders, newAccessToken);
-        }
-
-        //Adiciona/cria os tokens
-        if (accessTokenValid && refreshTokenValid) {
-            newAccessToken = tokenProvider.generateAccessToken(user.getEmail());
-            newRefreshToken = tokenProvider.generateRefreshToken(user.getEmail());
-            addAccessTokenCookie(responseHeaders, newAccessToken);
-            addRefreshTokenCookie(responseHeaders, newRefreshToken);
         }
 
         LoginResponse loginResponse = new LoginResponse(LoginResponse.SuccessFailure.SUCCESS, "Autenticação realizada com sucesso. " +
@@ -217,7 +196,7 @@ public class UserBOImpl implements UsersBO {
         if (!currentUser.getId().equals(userId))
             throw new ForbbidenException("Você não tem permissão para acessar esse recurso");
         User user = this.userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
-        return formatEntityToDto(user);
+        return FormatEntityToDTO.formatEntityToDto(user, UserDTO::new);
     }
 
     //Método que irá fazer o update do usuário
@@ -246,13 +225,13 @@ public class UserBOImpl implements UsersBO {
     public ResponseEntity<UserDTO> updateFavoriteBus(Long userId, List<Bus> busList) {
         User user = userDAO.getById(userId);
         user.setFavoriteBus(busList);
-        return ResponseEntity.ok(formatEntityToDto(userDAO.save(user)));
+        return ResponseEntity.ok(FormatEntityToDTO.formatEntityToDto(userDAO.save(user), UserDTO::new));
     }
 
     @Override
     public ResponseEntity<List<BusDTO>> listFavoriteBuses() {
         UserDTO user = me();
-        List<BusDTO> busDTOList = formatListBusToListBus(user.getFavoriteBus());
+        List<BusDTO> busDTOList = FormatEntityToDTO.formatListEntityToListDTO(user.getFavoriteBus(), BusDTO::new);
         return ResponseEntity.ok(busDTOList);
     }
 

@@ -10,6 +10,7 @@ import com.api.busTime.model.dao.BusDAO;
 import com.api.busTime.model.dtos.*;
 import com.api.busTime.model.entities.Bus;
 import com.api.busTime.model.entities.LineBus;
+import com.api.busTime.utils.FormatEntityToDTO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -33,12 +34,6 @@ public class BusBOImpl implements BusBO {
 
     @Autowired
     private UsersBO userBO;
-
-    private BusDTO formatEntityToDto(Bus bus) {
-        BusDTO busDTO = new BusDTO();
-        BeanUtils.copyProperties(bus, busDTO);
-        return busDTO;
-    }
 
     private boolean findBusWithNumber(Integer busNumber) {
         Optional<Bus> bus = this.busDAO.listBusForNumber(busNumber);
@@ -69,14 +64,6 @@ public class BusBOImpl implements BusBO {
             throw new ForbbidenException("Usuário não permitido!");
     }
 
-    private List<BusDTO> formatListEntityToListDto(List<Bus> busList) {
-        return busList.stream().map(this::formatEntityToDto).collect(Collectors.toList());
-    }
-
-    private Page<BusDTO> formatPageEntityPageToDto(Page<Bus> buses) {
-        return buses.map(this::formatEntityToDto);
-    }
-
     //Método que cria o onibus
     @Override
     public ResponseEntity<BusDTO> create(CreateBusDTO createBusDTO) {
@@ -96,7 +83,7 @@ public class BusBOImpl implements BusBO {
         bus.setLineBus(lineBus);
         //Colocando os valores de userDTO em user
         BeanUtils.copyProperties(createBusDTO, bus);
-        return ResponseEntity.ok(formatEntityToDto(this.busDAO.save(bus)));
+        return ResponseEntity.ok(FormatEntityToDTO.formatEntityToDto(this.busDAO.save(bus), BusDTO::new));
     }
 
     //Método que atualiza as informações do onibus
@@ -124,7 +111,7 @@ public class BusBOImpl implements BusBO {
         bus.setLineBus(lineBus1);
         //Colocando os valores de userDTO em user
         BeanUtils.copyProperties(updateBusDTO, bus);
-        return ResponseEntity.ok(formatEntityToDto(this.busDAO.save(bus)));
+        return ResponseEntity.ok(FormatEntityToDTO.formatEntityToDto(this.busDAO.save(bus), BusDTO::new));
     }
 
     //Método que irá deletar o onibus
@@ -142,34 +129,28 @@ public class BusBOImpl implements BusBO {
     @Override
     public ResponseEntity<BusDTO> getById(Long busId) {
         Bus bus = this.busDAO.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
-        return ResponseEntity.ok(formatEntityToDto(bus));
+        return ResponseEntity.ok(FormatEntityToDTO.formatEntityToDto(bus, BusDTO::new));
     }
 
     //Método que retorna os onibus criados pelo usuario
     @Override
     public ResponseEntity<List<BusDTO>> findBusForUser() {
-        List<BusDTO> busReturn;
         UserDTO user = userBO.me();
-        busReturn = formatListEntityToListDto(this.busDAO.listBusForUserId(user.getId()));
-        return ResponseEntity.ok(busReturn);
+        return ResponseEntity.ok(FormatEntityToDTO.formatListEntityToListDTO(this.busDAO.listBusForUserId(user.getId()), BusDTO::new));
     }
 
     //Método que lista os onibus pela linha
     @Override
     public Page<BusDTO> listBusForLine(String line, Pageable pageable) {
         Page<Bus> bus = this.busDAO.listBusForLine(line, pageable);
-        Page<BusDTO> busReturn;
-        busReturn = formatPageEntityPageToDto(bus);
-        return busReturn;
+        return FormatEntityToDTO.formatPageEntityToPageDto(bus, BusDTO::new);
     }
 
 
     //Método que lista os onibus paginado
     @Override
     public Page<BusDTO> listAll(Pageable pageable) {
-        Page<BusDTO> busReturn;
-        busReturn = formatPageEntityPageToDto(this.busDAO.listForDate(pageable));
-        return busReturn;
+        return FormatEntityToDTO.formatPageEntityToPageDto(this.busDAO.listForDate(pageable), BusDTO::new);
     }
 
 
@@ -182,13 +163,11 @@ public class BusBOImpl implements BusBO {
         List<Bus> busList = user.getFavoriteBus();
         assert busDTO != null;
         BeanUtils.copyProperties(busDTO, bus);
-
         if (findBusInBusList(busList, bus.getId()))
             throw new EntityExistsException("Ônibus já favoritado!");
         busList.add(bus);
         userBO.updateFavoriteBus(user.getId(), busList);
-        List<BusDTO> busListDTO = formatListEntityToListDto(busList);
-        return ResponseEntity.ok(busListDTO);
+        return ResponseEntity.ok(FormatEntityToDTO.formatListEntityToListDTO(busList, BusDTO::new));
     }
 
     //Método que desfavorita um onibus
@@ -202,10 +181,9 @@ public class BusBOImpl implements BusBO {
         assert busDTO != null;
         if (!findBusInBusList(busList, busDTO.getId()))
             throw new ResourceNotFoundException("Ônibus não encontrado nos favoritos!");
-
         removeBusFromList(busList, busId);
         userBO.updateFavoriteBus(userId, busList);
-        List<BusDTO> busListDTO = formatListEntityToListDto(busList);
+        List<BusDTO> busListDTO = FormatEntityToDTO.formatListEntityToListDTO(busList, BusDTO::new);
         return ResponseEntity.ok(busListDTO);
     }
 

@@ -1,8 +1,6 @@
 package com.api.busTime.model.entities;
 
-import com.api.busTime.utils.RequisitionStatus;
 import lombok.Data;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
