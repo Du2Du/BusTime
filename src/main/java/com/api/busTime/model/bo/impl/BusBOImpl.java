@@ -98,7 +98,6 @@ public class BusBOImpl implements BusBO {
         LineBusDTO lineBusDTO = findLineForName(updateBusDTO.getLineBus().getLineName());
 
         if (!Objects.equals(updateBusDTO.getLineBus().getLineName(), bus.getLineBus().getLineName())) {
-
             if (lineBusDTO == null) {
                 CreateLineBusDTO createLineBusDTO = new CreateLineBusDTO();
                 createLineBusDTO.setLineName(updateBusDTO.getLineBus().getLineName());
