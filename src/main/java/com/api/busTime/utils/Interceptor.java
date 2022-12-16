@@ -25,7 +25,7 @@ public class Interceptor implements HandlerInterceptor {
     private LogMessageBO logMessageBO;
 
     public boolean isAuthRoute(HttpServletRequest request) {
-        return request.getRequestURI().equals("/api/v1/auth/login") || request.getRequestURI().equals("/api/v1/users/register");
+        return request.getRequestURI().equals("/api/v1/auth/login") || request.getRequestURI().equals("/api/v1/users");
     }
 
     @Override

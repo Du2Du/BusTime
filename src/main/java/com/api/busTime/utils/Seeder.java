@@ -17,7 +17,7 @@ import java.util.List;
 
 //Esse é um seeder q criei para setar ao incializar a aplicação as permissões e grupo de permissões no banco,
 //eu não preciso mais do código dentro da função loadPermissionData e loadPermissionGroupData ja que ja foi cadastrado no banco,
-//mas deixei para o senhor ver como fiz, futuramente irei fazer uma opção do usuário adicionar uma permissão no frontend
+//mas deixei para o senhor ver como fiz.
 @Component
 public class Seeder implements CommandLineRunner {
 

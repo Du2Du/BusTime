@@ -5,4 +5,3 @@ authentication:
     refreshTokenExpirationMsec: 7776000000 #90 days
     accessTokenCookieName: accessToken
     refreshTokenCookieName: refreshToken
-server.port: ${{PORT}}

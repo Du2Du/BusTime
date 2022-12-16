@@ -10,6 +10,8 @@ public class BusTimeApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(BusTimeApplication.class, args);
+		
+		
 	}
 	
 }
