@@ -1,5 +1,5 @@
 FROM maven:3.6.0-jdk-17-alpine AS build
-COPY src /src
+COPY src /
 COPY pom.xml /
 RUN mvn -f /pom.xml clean package
 
