@@ -46,7 +46,6 @@ public class BusController {
     @AdminVerify
     @PostMapping
     public ResponseEntity<BusDTO> create(@RequestBody @Validated CreateBusDTO createBusDTO) {
-        
         return this.busBO.create(createBusDTO);
     }
 
