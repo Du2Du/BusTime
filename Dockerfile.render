@@ -5,7 +5,7 @@
 # - `v2-` images work with heroku-import v3.x.
 # - `v4-` images work with heroku-import v4.x. (We synced the tags.)
 
-ARG IMPORT_VERSION=v4
+ARG IMPORT_VERSION=v2
 ARG HEROKU_STACK=${IMPORT_VERSION}-heroku-20
 FROM ghcr.io/renderinc/heroku-app-builder:${HEROKU_STACK} AS builder
 
@@ -22,7 +22,7 @@ FROM ghcr.io/renderinc/heroku-app-builder:${HEROKU_STACK} AS builder
 # The FROM statement above refers to an image with the base buildpacks already
 # in place. We then run the apply-buildpacks.py script here because, unlike our
 # `v2` image, this allows us to expose build-time env vars to your app.
-RUN /render/build-scripts/apply-buildpacks.py heroku-20
+RUN /render/build-scripts/apply-buildpacks.py ${HEROKU_STACK}
 
 # We strongly recommend that you package a Procfile with your application, but
 # if you don't, we'll try to guess one for you. If this is incorrect, please
