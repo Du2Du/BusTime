@@ -2,7 +2,7 @@ version: '3.7'
 services:
   api-gateway:
     build: './'
-    container_name: api-gateway-container
+    container_name: bus-time-container
     restart: always
     ports:
       - '8080:8080'
