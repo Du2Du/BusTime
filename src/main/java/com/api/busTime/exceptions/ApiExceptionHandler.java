@@ -37,6 +37,11 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleEntityForbbiden(ForbbidenException exception) {
         return buildResponseEntity(HttpStatus.FORBIDDEN, exception.getMessage(),
                 Collections.singletonList(exception.getMessage()));
+    } 
+    @ExceptionHandler(TooManyRequests.class)
+    public ResponseEntity<Object> handleTooManyRequests(TooManyRequests exception) {
+        return buildResponseEntity(HttpStatus.TOO_MANY_REQUESTS, exception.getMessage(),
+                Collections.singletonList(exception.getMessage()));
     }
 
     @ExceptionHandler(UnauthorizedException.class)
