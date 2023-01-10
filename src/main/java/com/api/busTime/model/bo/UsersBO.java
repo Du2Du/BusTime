@@ -27,7 +27,7 @@ public interface UsersBO {
     
     ResponseEntity<UserDTO> updateFavoriteBus(Long userId, List<Bus> busList);
 
-    ResponseEntity<LoginResponse> login(LoginRequest loginRequest, String accessToken, String refreshToken);
+    ResponseEntity<LoginResponse> login(LoginRequest loginRequest, String accessToken, String refreshToken, String secret2FACode);
 
     ResponseEntity<LoginResponse> refresh(String accessToken, String refreshToken);
     

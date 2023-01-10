@@ -14,8 +14,6 @@ import java.util.List;
 @Table(name = "users")
 @ToString
 public class User {
-
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -29,15 +27,14 @@ public class User {
     private String cpf;
     @ManyToMany
     private List<Bus> favoriteBus;
-   
+    @Column(nullable = false)
+    private boolean isUsing2FA;
+    @Column
+    private String secret2FACode;
 
     @ManyToOne
     private PermissionsGroup permissionsGroup;
-
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(nullable = false)
     private String password;
-
-
-  
 }

@@ -28,6 +28,7 @@ public class AuthController {
     public ResponseEntity<LoginResponse> login(
             @CookieValue(name = "accessToken", required = false) String accessToken,
             @CookieValue(name = "refreshToken", required = false) String refreshToken,
+            @RequestHeader("2FA-Code") String secret2FACode,
             @RequestBody @Validated LoginRequest loginRequest
     ) {
         Authentication authentication = authenticationManager.authenticate(
@@ -36,7 +37,7 @@ public class AuthController {
         String decryptedAccessToken = SecurityCipher.decrypt(accessToken);
         String decryptedRefreshToken = SecurityCipher.decrypt(refreshToken);
         
-        return userBO.login(loginRequest, decryptedAccessToken, decryptedRefreshToken);
+        return userBO.login(loginRequest, decryptedAccessToken, decryptedRefreshToken, secret2FACode);
     }
 
     @PostMapping(value = "/refresh", produces = MediaType.APPLICATION_JSON_VALUE)

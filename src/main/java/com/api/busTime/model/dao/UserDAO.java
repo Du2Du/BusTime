@@ -14,10 +14,13 @@ import java.util.Optional;
 public interface UserDAO extends JpaRepository<User, Long> {
     @Query(name = "email")
     Optional<User> findUserByEmail(String email);
-    
+
     @Query("SELECT u FROM User u WHERE u.cpf = ?1")
     Optional<User> findUserByCpf(String cpf);
-    
+
     @Query("SELECT u FROM User u ORDER BY u.id ASC")
     Page<User> listAllForId(Pageable pageable);
+
+    @Query("SELECT secret2FACode FROM User u WHERE u.id = ?1")
+    String getSecret2FACode(Long id);
 }

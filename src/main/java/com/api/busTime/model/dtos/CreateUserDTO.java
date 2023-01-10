@@ -31,5 +31,7 @@ public class CreateUserDTO {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @JsonFormat(pattern = "dd/MM/yyyy")
     private Date birthDate;
+    @NotBlank
+    private boolean isUsing2FA;
 
 }

@@ -28,13 +28,13 @@ public class UserDTO {
     private Date birthDate;
     @NotNull
     private Long id;
-
     @NotNull
     private PermissionsGroup permissionsGroup;
-
     @NotNull
     private List<Bus> favoriteBus;
-
+    @NotBlank
+    private boolean isUsing2FA;
+    
     @Override
     public String toString() {
         return "UserDTO{" +

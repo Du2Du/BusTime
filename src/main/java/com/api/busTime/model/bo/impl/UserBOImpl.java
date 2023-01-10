@@ -53,7 +53,7 @@ public class UserBOImpl implements UsersBO {
     //Método que procura usuário pelo email
     private UserDTO findByEmail(String email) {
         User user = userDAO.findUserByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
-        return  FormatEntityToDTO.formatEntityToDto(user, UserDTO::new);
+        return FormatEntityToDTO.formatEntityToDto(user, UserDTO::new);
     }
 
     //Método que adiciona o token de acesso
@@ -124,7 +124,7 @@ public class UserBOImpl implements UsersBO {
 
     //Método que irá logar o usuário
     @Override
-    public ResponseEntity<LoginResponse> login(LoginRequest loginRequest, String accessToken, String refreshToken) {
+    public ResponseEntity<LoginResponse> login(LoginRequest loginRequest, String accessToken, String refreshToken, String secret2FACodeHeader) {
         String email = loginRequest.getEmail();
         UserDTO user = this.findByEmail(email);
         boolean accessTokenValid = tokenProvider.validateToken(accessToken);
@@ -137,7 +137,11 @@ public class UserBOImpl implements UsersBO {
         HttpHeaders responseHeaders = new HttpHeaders();
         Token newAccessToken;
         Token newRefreshToken;
-
+        if (user.isUsing2FA()) {
+            String secret2FACodeUser = userDAO.getSecret2FACode(user.getId());
+            Totp totp = new Totp(secret2FACodeUser);
+            if (!totp.verify(secret2FACodeHeader)) throw new ForbbidenException("Código Inválido!");
+        }
         //Validações se existe algum token, caso não irá criar para o usuário
         if ((!accessTokenValid && !refreshTokenValid) || (accessTokenValid && refreshTokenValid)) {
             newAccessToken = tokenProvider.generateAccessToken(user.getEmail());
