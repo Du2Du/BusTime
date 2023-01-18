@@ -70,15 +70,14 @@ public class BusBOImpl implements BusBO {
         Bus bus = new Bus();
         if (findBusWithNumber(createBusDTO.getBusNumber()))
             throw new EntityExistsException("Número de ônibus ja cadastrado");
-
-        //Buscando se a linha de ônibus existe
-        LineBusDTO lineBusDTO = findLineForName(createBusDTO.getLineBus().getLineName());
-        LineBus lineBus = new LineBus();
+        LineBusDTO lineBusDTO;
+        try {
+            lineBusDTO = findLineForName(createBusDTO.getLineBus().getLineName());
+        } catch (Exception ex) {
         CreateLineBusDTO createLineBusDTO = createBusDTO.getLineBus();
-        if (lineBusDTO == null)
             lineBusDTO = lineBusBO.create(createLineBusDTO).getBody();
-
-        assert lineBusDTO != null;
+        }
+        LineBus lineBus = new LineBus();
         BeanUtils.copyProperties(lineBusDTO, lineBus);
         bus.setLineBus(lineBus);
         //Colocando os valores de userDTO em user
