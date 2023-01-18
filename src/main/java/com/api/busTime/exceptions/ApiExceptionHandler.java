@@ -49,6 +49,12 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return buildResponseEntity(HttpStatus.UNAUTHORIZED, exception.getMessage(),
                 Collections.singletonList(exception.getMessage()));
     }
+    
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<Object> handleEntityForbbiden(BadCredentialsException exception) {
+        return buildResponseEntity(HttpStatus.UNAUTHORIZED, exception.getMessage(),
+                Collections.singletonList(exception.getMessage()));
+    }
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,

@@ -1,9 +1,9 @@
 package com.api.busTime.exceptions;
 
-public class ForbbidenException extends RuntimeException {
+public class BadCredentialsException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
-    public ForbbidenException(String message) {
+    public BadCredentialsException(String message) {
         super(message);
     }
 }

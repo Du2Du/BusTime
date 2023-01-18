@@ -40,7 +40,7 @@ public class Interceptor implements HandlerInterceptor {
     }
 
     public boolean isAuthRoute(HttpServletRequest request) {
-        return request.getRequestURI().equals("/api/v1/auth/login") || request.getRequestURI() == "/api/v1/users";
+        return request.getRequestURI().equals("/api/v1/auth/login") || (request.getRequestURI().equals("/api/v1/users") && request.getMethod().equals("POST"));
     }
 
     @Override
@@ -49,7 +49,7 @@ public class Interceptor implements HandlerInterceptor {
         CreateLogMessageDTO createLogMessageDTO = new CreateLogMessageDTO(request.getMethod(), request.getRequestURI());
         final AdminVerify adminVerify = ((HandlerMethod) handler)
                 .getMethod().getAnnotation((AdminVerify.class));
-        
+
         if (!bucket.tryConsume(1)) {
             createLogMessageDTO.setUrlStatus(RequisitionStatus.FAILURE.getValue());
             logMessageBO.create(createLogMessageDTO);

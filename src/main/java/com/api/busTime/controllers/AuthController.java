@@ -1,5 +1,6 @@
 package com.api.busTime.controllers;
 
+import com.api.busTime.exceptions.BadCredentialsException;
 import com.api.busTime.model.bo.UsersBO;
 import com.api.busTime.model.dtos.LoginRequest;
 import com.api.busTime.model.dtos.LoginResponse;
@@ -23,19 +24,24 @@ public class AuthController {
 
     @Autowired
     private AuthenticationManager authenticationManager;
-    
+
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(
             @CookieValue(name = "accessToken", required = false) String accessToken,
             @CookieValue(name = "refreshToken", required = false) String refreshToken,
             @RequestBody @Validated LoginRequest loginRequest
     ) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+        Authentication authentication;
+        try {
+            authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+        } catch (Exception ex) {
+            throw new BadCredentialsException("Credenciais Incorretas");
+        }
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String decryptedAccessToken = SecurityCipher.decrypt(accessToken);
         String decryptedRefreshToken = SecurityCipher.decrypt(refreshToken);
-        
+
         return userBO.login(loginRequest, decryptedAccessToken, decryptedRefreshToken);
     }
 
