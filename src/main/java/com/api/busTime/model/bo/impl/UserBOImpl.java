@@ -53,7 +53,7 @@ public class UserBOImpl implements UsersBO {
     //Método que procura usuário pelo email
     private UserDTO findByEmail(String email) {
         User user = userDAO.findUserByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado"));
-        return  FormatEntityToDTO.formatEntityToDto(user, UserDTO::new);
+        return FormatEntityToDTO.formatEntityToDto(user, UserDTO::new);
     }
 
     //Método que adiciona o token de acesso
@@ -192,9 +192,10 @@ public class UserBOImpl implements UsersBO {
 
     //Método que irá pegar os dados de um usuário pelo id
     @Override
-    public UserDTO findById(Long userId) {
+    public UserDTO findById(Long userId, boolean... passVerification) {
         UserDTO currentUser = me();
-        if (!currentUser.getId().equals(userId))
+       
+        if (!currentUser.getId().equals(userId) && !passVerification[0])
             throw new ForbbidenException("Você não tem permissão para acessar esse recurso");
         User user = this.userDAO.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado."));
         return FormatEntityToDTO.formatEntityToDto(user, UserDTO::new);

@@ -24,7 +24,7 @@ public interface BusBO {
     ResponseEntity<String> delete(Long busId);
     ResponseEntity<List<BusDTO>> favoriteBus(Long busId);
 
-    ResponseEntity<List<BusDTO>> desfavoriteBus(Long busId);
+    ResponseEntity<List<BusDTO>> desfavoriteBus(Long busId, Long userId, boolean... skipVerificationUserId);
     
     ResponseEntity<List<StatisticsDTO>> listBusStatistics();
 

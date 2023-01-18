@@ -74,10 +74,11 @@ public class BusBOImpl implements BusBO {
         try {
             lineBusDTO = findLineForName(createBusDTO.getLineBus().getLineName());
         } catch (Exception ex) {
-        CreateLineBusDTO createLineBusDTO = createBusDTO.getLineBus();
+            CreateLineBusDTO createLineBusDTO = createBusDTO.getLineBus();
             lineBusDTO = lineBusBO.create(createLineBusDTO).getBody();
         }
         LineBus lineBus = new LineBus();
+        assert lineBusDTO != null;
         BeanUtils.copyProperties(lineBusDTO, lineBus);
         bus.setLineBus(lineBus);
         //Colocando os valores de userDTO em user
@@ -119,6 +120,15 @@ public class BusBOImpl implements BusBO {
         //Verificando se existe algum onibus com esse id
         Bus bus = this.busDAO.findById(busId).orElseThrow(() -> new ResourceNotFoundException("Ônibus não encontrado."));
         verifyIdUserAdminBus(bus, user);
+        List<UserDTO> usersList = Objects.requireNonNull(userBO.findAll(Pageable.unpaged()).getBody()).getContent();
+        usersList.forEach(userEach -> {
+                    try {
+                        desfavoriteBus(busId, userEach.getId(), true);
+                    } catch (ResourceNotFoundException ex) {
+                        if (ex.getMessage().equals("Ônibus não encontrado nos favoritos!")) return;
+                    }
+                }
+        );
         this.busDAO.delete(bus);
         return ResponseEntity.ok("Ônibus deletado com sucesso");
     }
@@ -170,9 +180,10 @@ public class BusBOImpl implements BusBO {
 
     //Método que desfavorita um onibus
     @Override
-    public ResponseEntity<List<BusDTO>> desfavoriteBus(Long busId) {
-        UserDTO currenUser = userBO.me();
-        Long userId = currenUser.getId();
+    public ResponseEntity<List<BusDTO>> desfavoriteBus(Long busId, Long userId, boolean... skipVerificationUserId) {
+        boolean skipVerification;
+        skipVerification = skipVerificationUserId.length == 1 && skipVerificationUserId[0];
+        UserDTO currenUser = userBO.findById(userId, skipVerification);
         BusDTO busDTO = getById(busId).getBody();
         List<Bus> busList = currenUser.getFavoriteBus();
 

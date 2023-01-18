@@ -71,9 +71,9 @@ public class BusController {
         return this.busBO.favoriteBus(busId);
     }
 
-    @GetMapping("/desfavorite/{id}")
-    public ResponseEntity<List<BusDTO>> desfavoriteBus(@PathVariable("id") Long busId) {
-        return this.busBO.desfavoriteBus(busId);
+    @GetMapping("/desfavorite/{id}/{userId}")
+    public ResponseEntity<List<BusDTO>> desfavoriteBus(@PathVariable("id") Long busId, @PathVariable("userId") Long userId) {
+        return this.busBO.desfavoriteBus(busId, userId);
     }
 
     @AdminVerify(validationType = ValidationType.SUPER_ADMIN)
