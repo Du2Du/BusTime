@@ -13,7 +13,7 @@ import java.util.List;
 public interface UsersBO {
     UserDTO create(CreateUserDTO userDTO);
 
-    UserDTO findById(Long userId);
+    UserDTO findById(Long userId, boolean... passVerification);
 
     ResponseEntity<Page<UserDTO>> findAll(Pageable pageable);
     

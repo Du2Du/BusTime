@@ -37,7 +37,8 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleEntityForbbiden(ForbbidenException exception) {
         return buildResponseEntity(HttpStatus.FORBIDDEN, exception.getMessage(),
                 Collections.singletonList(exception.getMessage()));
-    } 
+    }
+
     @ExceptionHandler(TooManyRequests.class)
     public ResponseEntity<Object> handleTooManyRequests(TooManyRequests exception) {
         return buildResponseEntity(HttpStatus.TOO_MANY_REQUESTS, exception.getMessage(),
@@ -47,6 +48,18 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<Object> handleEntityForbbiden(UnauthorizedException exception) {
         return buildResponseEntity(HttpStatus.UNAUTHORIZED, exception.getMessage(),
+                Collections.singletonList(exception.getMessage()));
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<Object> handleEntityForbbiden(BadCredentialsException exception) {
+        return buildResponseEntity(HttpStatus.UNAUTHORIZED, exception.getMessage(),
+                Collections.singletonList(exception.getMessage()));
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<Object> handleEntityForbbiden(BadRequestException exception) {
+        return buildResponseEntity(HttpStatus.BAD_REQUEST, exception.getMessage(),
                 Collections.singletonList(exception.getMessage()));
     }
 

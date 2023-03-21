@@ -20,7 +20,7 @@ public interface BusDAO extends PagingAndSortingRepository<Bus, Long> {
     @Query(value = "SELECT COUNT(b.id) FROM bus b INNER JOIN users_favorite_bus fb ON fb.favorite_bus_id = b.id WHERE b.line_bus_id = ?1", nativeQuery = true)
     int listLineBusFavorited(Long lineId);
 
-    @Query("SELECT b FROM Bus b INNER JOIN LineBus l ON b.lineBus.id = l.id WHERE lower(l.lineName) = lower (?1)")
+    @Query("SELECT b FROM Bus b INNER JOIN LineBus l ON b.lineBus.id = l.id WHERE lower(l.lineName) LIKE CONCAT(lower(?1),'%')")
     Page<Bus> listBusForLine(String line, Pageable pageable);
 
     @Query("SELECT b FROM Bus b WHERE b.busNumber = ?1")
